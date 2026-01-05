@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamo Jaladores - Admin</title>
+    <style>
+        :root {
+            --primary: #d500f9; /* Violeta fuerte */
+            --secondary: #00bcd4; /* Cyan */
+            --bg: #0a0a0a;
+            --card-bg: #1c1c1c;
+            --text: #ffffff;
+            --success: #00e676;
+            --warning: #ffea00;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+        h1, h2, h3 { text-align: center; color: var(--secondary); margin-bottom: 20px; text-transform: uppercase; }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
+            border: 1px solid #333;
+        }
+
+        /* --- FORMULARIO --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.85rem; }
+        input {
+            width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #444;
+            color: white; border-radius: 6px; font-size: 1rem; box-sizing: border-box;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button.btn-save {
+            width: 100%; padding: 15px; margin-top: 20px;
+            background: linear-gradient(90deg, var(--primary), #651fff);
+            color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+            font-size: 1.1rem; transition: 0.2s;
+        }
+        button.btn-save:hover { filter: brightness(1.2); }
+
+        /* --- CALENDARIO --- */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-btn { background: #333; border: none; color: white; padding: 5px 15px; cursor: pointer; border-radius: 4px; }
+        
+        .calendar-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+        }
+        .day-head { text-align: center; font-size: 0.8rem; color: var(--secondary); padding: 5px; }
+        .day-cell {
+            background: #252525; min-height: 80px; padding: 5px; border-radius: 4px;
+            position: relative; font-size: 0.75rem; border: 1px solid #333; cursor: pointer;
+            transition: 0.2s;
+        }
+        .day-cell:hover { background: #303030; border-color: var(--secondary); }
+        .day-num { font-weight: bold; display: block; margin-bottom: 5px; }
+        
+        /* Indicadores dentro del calendario */
+        .worker-dot {
+            display: block; background: rgba(255,255,255,0.1); margin-bottom: 2px;
+            padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .worker-dot span { color: var(--success); font-weight: bold; }
+
+        /* --- DETALLE DEL DÍA (MODAL/LISTA) --- */
+        #detalleDia { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
+        .detalle-row { display: flex; justify-content: space-between; padding: 8px; background: #222; margin-bottom: 5px; border-radius: 4px; }
+        .detalle-bonus { color: var(--warning); font-size: 0.8rem; margin-left: 5px; }
+
+        /* --- TABLA DE PAGOS SEMANALES --- */
+        .payment-group { margin-bottom: 20px; border: 1px solid #444; border-radius: 8px; overflow: hidden; }
+        .payment-header {
+            background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary);
+            display: flex; justify-content: space-between;
+        }
+        .payment-date { color: #aaa; font-size: 0.9rem; font-weight: normal; }
+        .payment-row {
+            display: flex; justify-content: space-between; padding: 12px 15px;
+            border-bottom: 1px solid #2a2a2a; background: #1e1e1e;
+        }
+        .payment-row:last-child { border-bottom: none; }
+        .pay-amount { color: var(--success); font-weight: bold; font-size: 1.1rem; }
+
+        /* --- LOADING --- */
+        #loading { text-align: center; padding: 20px; color: var(--secondary); display: none; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dynamo Club System</h1>
+
+    <div class="card">
+        <h2>Nuevo Registro</h2>
+        <div class="form-grid">
+            <div>
+                <label>Fecha</label>
+                <input type="date" id="fechaInput">
+            </div>
+            <div>
+                <label>Jalador (Nombre)</label>
+                <input type="text" id="nombreInput" placeholder="Ej: Hebem">
+            </div>
+            <div>
+                <label>Jarras (S/3)</label>
+                <input type="number" id="jarras" value="0" min="0">
+            </div>
+            <div>
+                <label>Botellas (S/4)</label>
+                <input type="number" id="botellas" value="0" min="0">
+            </div>
+            <div>
+                <label>Cervezas (S/1)</label>
+                <input type="number" id="cervezas" value="0" min="0">
+            </div>
+            <div>
+                <label>Palacete (S/8)</label>
+                <input type="number" id="palacete" value="0" min="0">
+            </div>
+        </div>
+        <button class="btn-save" id="btnGuardar">Guardar Producción</button>
+    </div>
+
+    <div class="card">
+        <div class="calendar-header">
+            <button class="calendar-btn" id="prevMonth">&#10094;</button>
+            <h3 id="mesLabel" style="margin:0">Cargando...</h3>
+            <button class="calendar-btn" id="nextMonth">&#10095;</button>
+        </div>
+        <div id="loading">Cargando datos de Firebase...</div>
+        <div class="calendar-grid" id="calendarGrid">
+            </div>
+
+        <div id="detalleDia">
+            <h3 id="detalleFechaTitulo">Detalles del día</h3>
+            <div id="listaDetalles"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Pagos Semanales</h2>
+        <p style="color:#888; text-align: center; font-size:0.9rem;">
+            Ciclo: Domingo a Sábado | Pago: Martes
+        </p>
+        <div id="listaPagos">
+            </div>
+    </div>
+</div>
+
+<script type="module">
+    // Importar funciones necesarias de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Configuración de Firebase (Tus credenciales)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDObkCnt1nq0doCVwfiYiMhpfoSc7zhAXo",
+        authDomain: "dynamo-jaladores.firebaseapp.com",
+        projectId: "dynamo-jaladores",
+        storageBucket: "dynamo-jaladores.firebasestorage.app",
+        messagingSenderId: "1019895183576",
+        appId: "1:1019895183576:web:5acdd3a31e42c5ac53ffad",
+        measurementId: "G-51Q9X2TSH7"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- VARIABLES GLOBALES ---
+    const PRECIOS = { jarra: 3, botella: 4, cerveza: 1, palacete: 8, bono: 20 };
+    let currentDate = new Date();
+    let allRecords = []; // Almacén local de datos traídos de FB
+
+    // Referencias DOM
+    const fechaInput = document.getElementById('fechaInput');
+    const btnGuardar = document.getElementById('btnGuardar');
+    
+    // Setup Inicial
+    fechaInput.valueAsDate = new Date();
+    cargarDatos(); // Primera carga
+
+    // --- FUNCIONES DE LÓGICA DE NEGOCIO ---
+
+    function calcularGanancia(r) {
+        // r = registro (objeto)
+        let j = parseInt(r.jarras) || 0;
+        let b = parseInt(r.botellas) || 0;
+        let c = parseInt(r.cervezas) || 0;
+        let p = parseInt(r.palacete) || 0;
+
+        let base = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete);
+        
+        // Lógica de Puntos para Limpieza
+        // 1 Jarra/Botella/Palacete = 1 punto.
+        // 6 Cervezas = 1 punto.
+        let puntosCerveza = Math.floor(c / 6);
+        let puntosTotales = j + b + p + puntosCerveza;
+
+        let bono = 0;
+        if (puntosTotales >= 10) {
+            bono = PRECIOS.bono;
+        }
+
+        return {
+            total: base + bono,
+            tieneBono: bono > 0,
+            puntos: puntosTotales
+        };
+    }
+
+    // --- FUNCIONES FIREBASE ---
+
+    async function guardarRegistro() {
+        const nombre = document.getElementById('nombreInput').value.trim();
+        if (!nombre) return alert("Ingresa un nombre");
+
+        const data = {
+            fecha: fechaInput.value, // YYYY-MM-DD
+            nombre: nombre.toLowerCase(), // Guardamos en minúscula para agrupar mejor
+            nombreDisplay: nombre, // Guardamos como lo escribió para mostrarlo bonito
+            jarras: parseInt(document.getElementById('jarras').value) || 0,
+            botellas: parseInt(document.getElementById('botellas').value) || 0,
+            cervezas: parseInt(document.getElementById('cervezas').value) || 0,
+            palacete: parseInt(document.getElementById('palacete').value) || 0,
+            timestamp: new Date()
+        };
+
+        btnGuardar.textContent = "Guardando...";
+        btnGuardar.disabled = true;
+
+        try {
+            await addDoc(collection(db, "registros"), data);
+            alert("¡Registro guardado exitosamente!");
+            // Limpiar campos numéricos
+            document.getElementById('jarras').value = 0;
+            document.getElementById('botellas').value = 0;
+            document.getElementById('cervezas').value = 0;
+            document.getElementById('palacete').value = 0;
+            
+            // Recargar datos
+            await cargarDatos();
+        } catch (e) {
+            console.error("Error: ", e);
+            alert("Error al guardar en Firebase");
+        } finally {
+            btnGuardar.textContent = "Guardar Producción";
+            btnGuardar.disabled = false;
+        }
+    }
+
+    async function cargarDatos() {
+        document.getElementById('loading').style.display = 'block';
+        
+        // Traemos TODO para simplificar el cálculo semanal (en una app grande se filtra por fecha)
+        const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
+        
+        try {
+            const querySnapshot = await getDocs(q);
+            allRecords = [];
+            querySnapshot.forEach((doc) => {
+                allRecords.push({ id: doc.id, ...doc.data() });
+            });
+            
+            renderCalendar();
+            renderWeeklyReport();
+        } catch (e) {
+            console.error(e);
+            alert("Error cargando datos");
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    // --- RENDERIZADO CALENDARIO ---
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+        
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Titulo
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        document.getElementById('mesLabel').textContent = `${monthNames[month]} ${year}`;
+
+        // Headers Dias
+        ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].forEach(d => {
+            grid.innerHTML += `<div class="day-head">${d}</div>`;
+        });
+
+        // Espacios vacios
+        const firstDay = new Date(year, month, 1).getDay();
+        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+
+        // Dias
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        for(let i=1; i<=daysInMonth; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            
+            // Fecha String YYYY-MM-DD
+            const diaStr = i.toString().padStart(2, '0');
+            const mesStr = (month + 1).toString().padStart(2, '0');
+            const fechaKey = `${year}-${mesStr}-${diaStr}`;
+            
+            cell.innerHTML = `<span class="day-num">${i}</span>`;
+            
+            // Filtrar registros de este día
+            const registrosDia = allRecords.filter(r => r.fecha === fechaKey);
+            
+            // Mostrar resumen pequeño en el calendario
+            if(registrosDia.length > 0) {
+                registrosDia.forEach(reg => {
+                    const calc = calcularGanancia(reg);
+                    const div = document.createElement('div');
+                    div.className = 'worker-dot';
+                    div.innerHTML = `${reg.nombreDisplay}: <span>${calc.total}</span>`;
+                    cell.appendChild(div);
+                });
+            }
+
+            // Click para ver detalles
+            cell.onclick = () => verDetalleDia(fechaKey, registrosDia);
+
+            grid.appendChild(cell);
+        }
+    }
+
+    // --- DETALLE DEL DÍA ---
+    function verDetalleDia(fecha, registros) {
+        const panel = document.getElementById('detalleDia');
+        const lista = document.getElementById('listaDetalles');
+        const titulo = document.getElementById('detalleFechaTitulo');
+        
+        panel.style.display = 'block';
+        titulo.textContent = `Detalles: ${fecha}`;
+        lista.innerHTML = '';
+
+        if(registros.length === 0) {
+            lista.innerHTML = '<div style="padding:10px; color:#666;">Sin registros este día.</div>';
+            return;
+        }
+
+        registros.forEach(r => {
+            const calc = calcularGanancia(r);
+            const bonoBadge = calc.tieneBono ? `<span class="detalle-bonus">★ LIMPIEZA (+20)</span>` : '';
+            
+            const row = document.createElement('div');
+            row.className = 'detalle-row';
+            row.innerHTML = `
+                <div>
+                    <strong>${r.nombreDisplay}</strong><br>
+                    <small style="color:#888">${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P</small>
+                    ${bonoBadge}
+                </div>
+                <div style="text-align:right">
+                    <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
+                    <small style="color:#666">Puntos: ${calc.puntos}</small>
+                </div>
+            `;
+            lista.appendChild(row);
+        });
+        
+        // Scroll suave hacia el detalle
+        panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // --- REPORTE SEMANAL ---
+
+    function getSunday(d) {
+        d = new Date(d);
+        const day = d.getDay();
+        const diff = d.getDate() - day; // ajustar al domingo
+        return new Date(d.setDate(diff));
+    }
+
+    function addDays(date, days) {
+        const result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    }
+
+    function renderWeeklyReport() {
+        const container = document.getElementById('listaPagos');
+        container.innerHTML = '';
+
+        // Agrupar por Semana (Key: "YYYY-MM-DD" del domingo)
+        const weeklyGroups = {};
+
+        allRecords.forEach(r => {
+            // Arreglo zona horaria simple
+            const parts = r.fecha.split('-');
+            const fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
+            
+            const sunday = getSunday(fechaObj);
+            const sundayKey = sunday.toISOString().split('T')[0]; // ID de la semana
+
+            if(!weeklyGroups[sundayKey]) weeklyGroups[sundayKey] = {};
+            
+            // Agrupar por Jalador dentro de la semana
+            const nombre = r.nombreDisplay; 
+            if(!weeklyGroups[sundayKey][nombre]) weeklyGroups[sundayKey][nombre] = 0;
+
+            const calc = calcularGanancia(r);
+            weeklyGroups[sundayKey][nombre] += calc.total;
+        });
+
+        // Ordenar semanas (más reciente primero)
+        const sortedWeeks = Object.keys(weeklyGroups).sort().reverse();
+
+        sortedWeeks.forEach(sundayKey => {
+            const parts = sundayKey.split('-');
+            const sundayDate = new Date(parts[0], parts[1]-1, parts[2]);
+            
+            const saturdayDate = addDays(sundayDate, 6);
+            const paymentDate = addDays(sundayDate, 9); // Domingo + 9 dias = Martes de la sgte semana (Dom->0, Lun->1... Sab->6, Dom->7, Lun->8, Mar->9)
+            // Espera, logica de usuario: "una semana se cuenta desde domingo a sabado, los pagos son los dias martes"
+            // Si la semana acaba el Sabado 10, el pago es el Martes 13.
+            // Sabado + 3 dias = Martes.
+
+            const options = { day: 'numeric', month: 'short' };
+            const rangeStr = `${sundayDate.toLocaleDateString('es-ES', options)} - ${saturdayDate.toLocaleDateString('es-ES', options)}`;
+            const payStr = `Cobran: Martes ${paymentDate.toLocaleDateString('es-ES', options)}`;
+
+            // HTML de la semana
+            let htmlSemana = `
+                <div class="payment-group">
+                    <div class="payment-header">
+                        <span>SEMANA: ${rangeStr}</span>
+                        <span class="payment-date">${payStr}</span>
+                    </div>
+            `;
+
+            // Listar jaladores de esa semana
+            const jaladores = weeklyGroups[sundayKey];
+            for (const [nombre, total] of Object.entries(jaladores)) {
+                htmlSemana += `
+                    <div class="payment-row">
+                        <span>${nombre}</span>
+                        <span class="pay-amount">S/ ${total}</span>
+                    </div>
+                `;
+            }
+            htmlSemana += `</div>`;
+            container.innerHTML += htmlSemana;
+        });
+    }
+
+    // --- EVENTOS ---
+    document.getElementById('btnGuardar').addEventListener('click', guardarRegistro);
+    
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+
+</script>
+
+</body>
+</html>
