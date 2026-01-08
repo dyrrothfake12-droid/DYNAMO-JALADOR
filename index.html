@@ -13,18 +13,18 @@
             --text: #ffffff;
             --success: #00e676;
             --warning: #ffea00;
+            --danger: #ff1744;
         }
 
-        /* Evitar selección de texto para proteger un poco más */
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 20px;
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10 and IE 11 */
-            user-select: none; /* Standard syntax */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .container { max-width: 900px; margin: 0 auto; }
@@ -51,8 +51,6 @@
             color: white; border-radius: 6px; font-size: 1rem; box-sizing: border-box;
         }
         input:focus { outline: none; border-color: var(--primary); }
-
-        /* CLASE PARA MAYÚSCULAS */
         .uppercase-input { text-transform: uppercase; }
 
         button.btn-save {
@@ -66,74 +64,108 @@
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-btn { background: #333; border: none; color: white; padding: 5px 15px; cursor: pointer; border-radius: 4px; }
         
-        /* --- 2. CALENDARIO SCROLLABLE --- */
-        .calendar-wrapper {
-            overflow-x: auto; /* Permite scroll horizontal */
-            padding-bottom: 10px;
-        }
-
-        .calendar-grid {
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 5px;
-            /* ANCHO MÍNIMO FORZADO: Esto evita que se deforme. 
-               Si la pantalla es chica, aparecerá barra de scroll */
-            min-width: 800px; 
-        }
-
-        .day-head { text-align: center; font-size: 0.8rem; color: var(--secondary); padding: 5px; }
+        /* CALENDARIO GRANDE (SCROLL) */
+        .calendar-wrapper { overflow-x: auto; padding-bottom: 10px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; min-width: 800px; }
         
+        .day-head { text-align: center; font-size: 0.8rem; color: var(--secondary); padding: 5px; }
         .day-cell {
-            background: #252525; 
-            min-height: 100px; /* Un poco más alto para que quepan notas */
-            padding: 5px; 
-            border-radius: 4px;
-            position: relative; 
-            font-size: 0.75rem; 
-            border: 1px solid #333; 
-            cursor: pointer;
-            transition: 0.2s;
+            background: #252525; min-height: 100px; padding: 5px; border-radius: 4px;
+            position: relative; font-size: 0.75rem; border: 1px solid #333; cursor: pointer; transition: 0.2s;
         }
         .day-cell:hover { background: #303030; border-color: var(--secondary); }
         .day-num { font-weight: bold; display: block; margin-bottom: 5px; }
-        
-        .worker-dot {
-            display: block; background: rgba(255,255,255,0.1); margin-bottom: 2px;
-            padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        .worker-dot { display: block; background: rgba(255,255,255,0.1); margin-bottom: 2px; padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .worker-dot span { color: var(--success); font-weight: bold; }
 
         #detalleDia { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
         .detalle-row { display: flex; justify-content: space-between; padding: 8px; background: #222; margin-bottom: 5px; border-radius: 4px; }
-        .detalle-bonus { color: var(--warning); font-size: 0.8rem; margin-left: 5px; }
 
         .payment-group { margin-bottom: 20px; border: 1px solid #444; border-radius: 8px; overflow: hidden; }
-        .payment-header {
-            background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary);
-            display: flex; justify-content: space-between;
-        }
+        .payment-header { background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary); display: flex; justify-content: space-between; }
         .payment-date { color: #aaa; font-size: 0.9rem; font-weight: normal; }
-        .payment-row {
-            display: flex; justify-content: space-between; padding: 12px 15px;
-            border-bottom: 1px solid #2a2a2a; background: #1e1e1e;
-        }
+        .payment-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #2a2a2a; background: #1e1e1e; }
         .payment-row:last-child { border-bottom: none; }
         .pay-amount { color: var(--success); font-weight: bold; font-size: 1.1rem; }
 
         #loading { text-align: center; padding: 20px; color: var(--secondary); display: none; }
 
-        /* Estilos para el Cuaderno de Notas */
-        textarea#notasGenerales {
-            width: 100%;
-            height: 150px;
-            background: #2a2a2a;
-            color: #fff;
-            border: 1px solid #444;
+        textarea#notasGenerales { width: 100%; height: 150px; background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 6px; resize: none; font-family: monospace; }
+
+        /* --- NUEVOS ESTILOS PARA LA VISTA GENERAL Y PALETA --- */
+        .palette {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
             padding: 10px;
-            border-radius: 6px;
-            resize: none;
-            font-family: monospace;
+            background: #252525;
+            border-radius: 8px;
         }
+        .color-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .color-btn.selected { transform: scale(1.2); border-color: white; box-shadow: 0 0 10px white; }
+
+        /* MINI CALENDARIO (SIN SCROLL) */
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            width: 100%; /* Se adapta a la pantalla */
+        }
+        .mini-cell {
+            background: #222;
+            aspect-ratio: 1/1; /* Cuadrado perfecto */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #333;
+            color: #888;
+        }
+        .mini-cell.has-money { color: var(--success); font-weight: bold; border-color: #444; }
+        /* Indicador de que tiene datos */
+        .mini-dot { width: 4px; height: 4px; background: var(--success); border-radius: 50%; margin-top: 2px; }
+
+
+        /* --- NOTIFICACIÓN TOAST (Efecto elegante) --- */
+#toast {
+    visibility: hidden; /* Oculto por defecto */
+    min-width: 250px;
+    margin-left: -125px; /* Mitad del ancho para centrar */
+    background-color: #1a1a1a;
+    color: #fff;
+    text-align: center;
+    border-radius: 50px; /* Bordes redondos */
+    padding: 16px;
+    position: fixed;
+    z-index: 100; /* Que se vea encima de todo */
+    left: 50%;
+    bottom: 30px;
+    font-size: 1rem;
+    border: 2px solid var(--success); /* Borde verde neón */
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.6); /* Resplandor */
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s, transform 0.3s;
+}
+
+/* Clase para mostrarlo */
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px; /* Sube un poquito al aparecer */
+    transform: scale(1.05);
+}
+
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -150,10 +182,8 @@
         <div id="loading">Cargando datos de Firebase...</div>
         
         <div class="calendar-wrapper">
-            <div class="calendar-grid" id="calendarGrid">
-                </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
-        
         <p style="text-align:center; color:#555; font-size:0.7rem;">Desliza horizontalmente para ver todos los días</p>
 
         <div id="detalleDia">
@@ -198,31 +228,36 @@
         <p style="color:#888; text-align: center; font-size:0.9rem;">
             Ciclo: Domingo a Sábado | Pago: Martes
         </p>
-        <div id="listaPagos">
-            </div>
+        <div id="listaPagos"></div>
     </div>
 
     <div class="card" style="border-color: #555;">
         <h2>📝 Notas</h2>
-        <p style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">
-            Espacio libre para anotar
-        </p>
-        <textarea id="notasGenerales" placeholder="Ejemplo:
-- Hebem pidió 20 soles adelanto (Lunes 5)
-- Juan debe una botella..."></textarea>
+        <textarea id="notasGenerales" placeholder="Espacio libre para anotar..."></textarea>
+    </div>
+
+    <div class="card" style="border: 1px solid var(--primary);">
+        <h2>🎨 Vista General (Color)</h2>
+        <p style="color:#aaa; font-size:0.7rem; text-align:center;">Selecciona un color y toca un día para pintarlo.</p>
+        
+        <div class="palette">
+            <div class="color-btn" style="background:transparent; border:1px solid #666; color:#666; display:flex; align-items:center; justify-content:center; font-weight:bold;" onclick="selectColor(null)">X</div>
+            <div class="color-btn" style="background:#00e676" onclick="selectColor('#00e676')"></div> <div class="color-btn" style="background:#ff1744" onclick="selectColor('#ff1744')"></div> <div class="color-btn" style="background:#ffea00" onclick="selectColor('#ffea00')"></div> <div class="color-btn" style="background:#2979ff" onclick="selectColor('#2979ff')"></div> <div class="color-btn" style="background:#d500f9" onclick="selectColor('#d500f9')"></div> </div>
+
+        <div class="mini-grid" id="miniCalendar">
+            </div>
     </div>
 </div>
-
+<div id="toast">✅ ¡Registro Guardado con Éxito!</div>
 <script>
     document.onkeydown = function(e) {
-        // Bloquear F12
         if(e.keyCode == 123) return false;
-        
-        // Bloquear Ctrl+U, Ctrl+S, Ctrl+I, Ctrl+J
         if(e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0) || e.keyCode == 'S'.charCodeAt(0) || e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) {
             return false;
         }
     }
+
+
 </script>
 
 <script type="module">
@@ -242,12 +277,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const PRECIOS = { 
-        jarra: 4.50,
-        botella: 4, 
-        cerveza: 1, 
-        palacete: 8 
-    }; 
+    const PRECIOS = { jarra: 4.50, botella: 4, cerveza: 1, palacete: 8 }; 
     
     let currentDate = new Date();
     let allRecords = []; 
@@ -257,42 +287,70 @@
     fechaInput.valueAsDate = new Date();
     cargarDatos(); 
 
-    // --- Lógica del Bloc de Notas (LocalStorage) ---
+    // --- Variables para la Paleta ---
+    window.currentColor = null; 
+    window.paintedDays = JSON.parse(localStorage.getItem('dynamoPaintedDays')) || {}; 
+
+    // Lógica del Bloc de Notas
     const notasArea = document.getElementById('notasGenerales');
-    // Cargar notas al abrir
     if(localStorage.getItem('dynamoNotas')) {
         notasArea.value = localStorage.getItem('dynamoNotas');
     }
-    // Guardar notas cada vez que se escribe
     notasArea.addEventListener('input', function() {
         localStorage.setItem('dynamoNotas', this.value);
     });
+
+    // --- FUNCIONES DE NOTIFICACIÓN (TOAST) ---
+    function lanzarToast(mensaje) {
+        const x = document.getElementById("toast");
+        if(x) {
+            x.textContent = "✅ " + mensaje;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        } else {
+            // Fallback por si no pegaste el HTML del toast
+            console.log(mensaje);
+        }
+    }
+
+    // --- FUNCIONES GLOBALES PARA LA PALETA ---
+    window.selectColor = function(color) {
+        window.currentColor = color;
+        document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+        if(event && event.target) event.target.classList.add('selected');
+    };
+
+    window.paintDay = function(fechaKey) {
+        if(window.currentColor === undefined) return; 
+
+        if(window.currentColor === null) {
+            delete window.paintedDays[fechaKey]; 
+        } else {
+            window.paintedDays[fechaKey] = window.currentColor; 
+        }
+        
+        localStorage.setItem('dynamoPaintedDays', JSON.stringify(window.paintedDays));
+        renderMiniCalendar(); 
+    };
 
     function calcularGanancia(r) {
         let j = parseInt(r.jarras) || 0;
         let b = parseInt(r.botellas) || 0;
         let c = parseInt(r.cervezas) || 0;
         let p = parseInt(r.palacete) || 0;
-
-        let total = (j * PRECIOS.jarra) + 
-                    (b * PRECIOS.botella) + 
-                    (c * PRECIOS.cerveza) + 
-                    (p * PRECIOS.palacete);
-        return {
-            total: total,
-            tieneBono: false, 
-            puntos: 0 
-        };
+        let total = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete);
+        return { total: total };
     }
 
+    // --- FUNCIÓN GUARDAR ACTUALIZADA CON TOAST ---
     async function guardarRegistro() {
         const nombre = document.getElementById('nombreInput').value.trim();
-        if (!nombre) return alert("Ingresa un nombre");
+        if (!nombre) return lanzarToast("¡Falta el nombre!"); // Usa Toast para error simple
 
         const data = {
             fecha: fechaInput.value, 
             nombre: nombre.toLowerCase(), 
-            nombreDisplay: nombre.toUpperCase(), // Aseguramos guardar en mayúscula display
+            nombreDisplay: nombre.toUpperCase(),
             jarras: parseInt(document.getElementById('jarras').value) || 0,
             botellas: parseInt(document.getElementById('botellas').value) || 0,
             cervezas: parseInt(document.getElementById('cervezas').value) || 0,
@@ -300,46 +358,51 @@
             timestamp: new Date()
         };
 
+        // Efecto visual en el botón
         btnGuardar.textContent = "Guardando...";
         btnGuardar.disabled = true;
+        btnGuardar.style.background = "#333"; 
 
         try {
             await addDoc(collection(db, "registros"), data);
-            alert("¡Registro guardado exitosamente!");
-            // Limpiar campos numéricos
+            
+            // ANIMACIÓN DE ÉXITO
+            lanzarToast("¡Registro guardado!");
+
+            // Limpiar campos
             document.getElementById('jarras').value = 0;
             document.getElementById('botellas').value = 0;
             document.getElementById('cervezas').value = 0;
             document.getElementById('palacete').value = 0;
-            document.getElementById('nombreInput').value = ''; // Limpiar nombre también
+            document.getElementById('nombreInput').value = ''; 
+            document.getElementById('nombreInput').focus(); // Volver al campo nombre
             
             await cargarDatos();
         } catch (e) {
             console.error("Error: ", e);
-            alert("Error al guardar en Firebase");
+            lanzarToast("❌ Error al guardar");
         } finally {
+            // Restaurar botón
             btnGuardar.textContent = "Guardar Producción";
             btnGuardar.disabled = false;
+            btnGuardar.style.background = "linear-gradient(90deg, var(--primary), #651fff)";
         }
     }
 
     async function cargarDatos() {
         document.getElementById('loading').style.display = 'block';
-        
         const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
-        
         try {
             const querySnapshot = await getDocs(q);
             allRecords = [];
             querySnapshot.forEach((doc) => {
                 allRecords.push({ id: doc.id, ...doc.data() });
             });
-            
             renderCalendar();
+            renderMiniCalendar(); 
             renderWeeklyReport();
         } catch (e) {
             console.error(e);
-            alert("Error cargando datos");
         } finally {
             document.getElementById('loading').style.display = 'none';
         }
@@ -348,32 +411,24 @@
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = '';
-        
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         document.getElementById('mesLabel').textContent = `${monthNames[month]} ${year}`;
 
-        ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].forEach(d => {
-            grid.innerHTML += `<div class="day-head">${d}</div>`;
-        });
-
+        ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].forEach(d => grid.innerHTML += `<div class="day-head">${d}</div>`);
         const firstDay = new Date(year, month, 1).getDay();
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
-
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
         for(let i=1; i<=daysInMonth; i++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
-            
             const diaStr = i.toString().padStart(2, '0');
             const mesStr = (month + 1).toString().padStart(2, '0');
             const fechaKey = `${year}-${mesStr}-${diaStr}`;
             
             cell.innerHTML = `<span class="day-num">${i}</span>`;
-            
             const registrosDia = allRecords.filter(r => r.fecha === fechaKey);
             
             if(registrosDia.length > 0) {
@@ -381,13 +436,53 @@
                     const calc = calcularGanancia(reg);
                     const div = document.createElement('div');
                     div.className = 'worker-dot';
-                    // Nombre en mayúscula
                     div.innerHTML = `${reg.nombreDisplay.toUpperCase()}: <span>${calc.total}</span>`;
                     cell.appendChild(div);
                 });
             }
-
             cell.onclick = () => verDetalleDia(fechaKey, registrosDia);
+            grid.appendChild(cell);
+        }
+    }
+
+    function renderMiniCalendar() {
+        const grid = document.getElementById('miniCalendar');
+        grid.innerHTML = ''; 
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        ['D','L','M','M','J','V','S'].forEach(d => {
+            grid.innerHTML += `<div style="text-align:center; font-size:0.7rem; color:#aaa;">${d}</div>`;
+        });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for(let i=1; i<=daysInMonth; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'mini-cell';
+            const diaStr = i.toString().padStart(2, '0');
+            const mesStr = (month + 1).toString().padStart(2, '0');
+            const fechaKey = `${year}-${mesStr}-${diaStr}`;
+            
+            cell.textContent = i;
+
+            const registrosDia = allRecords.filter(r => r.fecha === fechaKey);
+            if(registrosDia.length > 0) {
+                cell.classList.add('has-money');
+                const dot = document.createElement('div');
+                dot.className = 'mini-dot';
+                cell.appendChild(dot);
+            }
+
+            if(window.paintedDays[fechaKey]) {
+                cell.style.backgroundColor = window.paintedDays[fechaKey];
+                cell.style.color = '#000'; 
+                cell.style.borderColor = 'white';
+            }
+
+            cell.onclick = () => window.paintDay(fechaKey);
             grid.appendChild(cell);
         }
     }
@@ -396,35 +491,24 @@
         const panel = document.getElementById('detalleDia');
         const lista = document.getElementById('listaDetalles');
         const titulo = document.getElementById('detalleFechaTitulo');
-        
         panel.style.display = 'block';
         titulo.textContent = `Detalles: ${fecha}`;
         lista.innerHTML = '';
-
         if(registros.length === 0) {
             lista.innerHTML = '<div style="padding:10px; color:#666;">Sin registros este día.</div>';
             return;
         }
-
         registros.forEach(r => {
             const calc = calcularGanancia(r);
             const row = document.createElement('div');
             row.className = 'detalle-row';
             row.innerHTML = `
-                <div>
-                    <strong>${r.nombreDisplay.toUpperCase()}</strong><br>
-                    <small style="color:#888">${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P</small>
-                </div>
-                <div style="text-align:right">
-                    <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
-                </div>
-            `;
+                <div><strong>${r.nombreDisplay.toUpperCase()}</strong><br><small style="color:#888">${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P</small></div>
+                <div style="text-align:right"><div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div></div>`;
             lista.appendChild(row);
         });
-        
         panel.scrollIntoView({ behavior: 'smooth' });
     }
-
 
     function getSunday(d) {
         d = new Date(d);
@@ -432,64 +516,39 @@
         const diff = d.getDate() - day; 
         return new Date(d.setDate(diff));
     }
-
     function addDays(date, days) {
         const result = new Date(date);
         result.setDate(result.getDate() + days);
         return result;
     }
-
     function renderWeeklyReport() {
         const container = document.getElementById('listaPagos');
         container.innerHTML = '';
-
         const weeklyGroups = {};
-
         allRecords.forEach(r => {
             const parts = r.fecha.split('-');
             const fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
-            
             const sunday = getSunday(fechaObj);
             const sundayKey = sunday.toISOString().split('T')[0];
-
             if(!weeklyGroups[sundayKey]) weeklyGroups[sundayKey] = {};
-            
             const nombre = r.nombreDisplay; 
             if(!weeklyGroups[sundayKey][nombre]) weeklyGroups[sundayKey][nombre] = 0;
-
             const calc = calcularGanancia(r);
             weeklyGroups[sundayKey][nombre] += calc.total;
         });
-
         const sortedWeeks = Object.keys(weeklyGroups).sort().reverse();
-
         sortedWeeks.forEach(sundayKey => {
             const parts = sundayKey.split('-');
             const sundayDate = new Date(parts[0], parts[1]-1, parts[2]);
-            
             const saturdayDate = addDays(sundayDate, 6);
             const paymentDate = addDays(sundayDate, 9); 
-
             const options = { day: 'numeric', month: 'short' };
             const rangeStr = `${sundayDate.toLocaleDateString('es-ES', options)} - ${saturdayDate.toLocaleDateString('es-ES', options)}`;
             const payStr = `Cobran: Martes ${paymentDate.toLocaleDateString('es-ES', options)}`;
-
-            let htmlSemana = `
-                <div class="payment-group">
-                    <div class="payment-header">
-                        <span>SEMANA: ${rangeStr}</span>
-                        <span class="payment-date">${payStr}</span>
-                    </div>
-            `;
-
+            let htmlSemana = `<div class="payment-group"><div class="payment-header"><span>SEMANA: ${rangeStr}</span><span class="payment-date">${payStr}</span></div>`;
             const jaladores = weeklyGroups[sundayKey];
             for (const [nombre, total] of Object.entries(jaladores)) {
-                htmlSemana += `
-                    <div class="payment-row">
-                        <span>${nombre.toUpperCase()}</span>
-                        <span class="pay-amount">S/ ${total.toFixed(2)}</span>
-                    </div>
-                `;
+                htmlSemana += `<div class="payment-row"><span>${nombre.toUpperCase()}</span><span class="pay-amount">S/ ${total.toFixed(2)}</span></div>`;
             }
             htmlSemana += `</div>`;
             container.innerHTML += htmlSemana;
@@ -497,16 +556,8 @@
     }
 
     document.getElementById('btnGuardar').addEventListener('click', guardarRegistro);
-    
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar();
-    });
-    
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    });
+    document.getElementById('prevMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); renderMiniCalendar(); });
+    document.getElementById('nextMonth').addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); renderMiniCalendar(); });
 
 </script>
 </body>
