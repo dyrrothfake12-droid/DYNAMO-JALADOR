@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dynamo Jaladores - Admin</title>
     <style>
         :root {
-            --primary: #d500f9; /* Violeta fuerte */
-            --secondary: #00bcd4; /* Cyan */
+            --primary: #d500f9;
+            --secondary: #00bcd4;
             --bg: #0a0a0a;
             --card-bg: #1c1c1c;
             --text: #ffffff;
@@ -15,18 +15,21 @@
             --warning: #ffea00;
         }
 
+        /* Evitar selección de texto para proteger un poco más */
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 20px;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
         }
 
         .container { max-width: 900px; margin: 0 auto; }
         h1, h2, h3 { text-align: center; color: var(--secondary); margin-bottom: 20px; text-transform: uppercase; }
 
-        /* --- CARDS --- */
         .card {
             background: var(--card-bg);
             padding: 20px;
@@ -36,7 +39,6 @@
             border: 1px solid #333;
         }
 
-        /* --- FORMULARIO --- */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -50,6 +52,9 @@
         }
         input:focus { outline: none; border-color: var(--primary); }
 
+        /* CLASE PARA MAYÚSCULAS */
+        .uppercase-input { text-transform: uppercase; }
+
         button.btn-save {
             width: 100%; padding: 15px; margin-top: 20px;
             background: linear-gradient(90deg, var(--primary), #651fff);
@@ -58,35 +63,50 @@
         }
         button.btn-save:hover { filter: brightness(1.2); }
 
-        /* --- CALENDARIO --- */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-btn { background: #333; border: none; color: white; padding: 5px 15px; cursor: pointer; border-radius: 4px; }
         
-        .calendar-grid {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+        /* --- 2. CALENDARIO SCROLLABLE --- */
+        .calendar-wrapper {
+            overflow-x: auto; /* Permite scroll horizontal */
+            padding-bottom: 10px;
         }
+
+        .calendar-grid {
+            display: grid; 
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 5px;
+            /* ANCHO MÍNIMO FORZADO: Esto evita que se deforme. 
+               Si la pantalla es chica, aparecerá barra de scroll */
+            min-width: 800px; 
+        }
+
         .day-head { text-align: center; font-size: 0.8rem; color: var(--secondary); padding: 5px; }
+        
         .day-cell {
-            background: #252525; min-height: 80px; padding: 5px; border-radius: 4px;
-            position: relative; font-size: 0.75rem; border: 1px solid #333; cursor: pointer;
+            background: #252525; 
+            min-height: 100px; /* Un poco más alto para que quepan notas */
+            padding: 5px; 
+            border-radius: 4px;
+            position: relative; 
+            font-size: 0.75rem; 
+            border: 1px solid #333; 
+            cursor: pointer;
             transition: 0.2s;
         }
         .day-cell:hover { background: #303030; border-color: var(--secondary); }
         .day-num { font-weight: bold; display: block; margin-bottom: 5px; }
         
-        /* Indicadores dentro del calendario */
         .worker-dot {
             display: block; background: rgba(255,255,255,0.1); margin-bottom: 2px;
             padding: 2px 4px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .worker-dot span { color: var(--success); font-weight: bold; }
 
-        /* --- DETALLE DEL DÍA (MODAL/LISTA) --- */
         #detalleDia { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
         .detalle-row { display: flex; justify-content: space-between; padding: 8px; background: #222; margin-bottom: 5px; border-radius: 4px; }
         .detalle-bonus { color: var(--warning); font-size: 0.8rem; margin-left: 5px; }
 
-        /* --- TABLA DE PAGOS SEMANALES --- */
         .payment-group { margin-bottom: 20px; border: 1px solid #444; border-radius: 8px; overflow: hidden; }
         .payment-header {
             background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary);
@@ -100,12 +120,23 @@
         .payment-row:last-child { border-bottom: none; }
         .pay-amount { color: var(--success); font-weight: bold; font-size: 1.1rem; }
 
-        /* --- LOADING --- */
         #loading { text-align: center; padding: 20px; color: var(--secondary); display: none; }
 
+        /* Estilos para el Cuaderno de Notas */
+        textarea#notasGenerales {
+            width: 100%;
+            height: 150px;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            resize: none;
+            font-family: monospace;
+        }
     </style>
 </head>
-<>
+<body oncontextmenu="return false;">
 
 <div class="container">
     <h1>DYNAMO</h1>
@@ -117,8 +148,13 @@
             <button class="calendar-btn" id="nextMonth">&#10095;</button>
         </div>
         <div id="loading">Cargando datos de Firebase...</div>
-        <div class="calendar-grid" id="calendarGrid">
-            </div>
+        
+        <div class="calendar-wrapper">
+            <div class="calendar-grid" id="calendarGrid">
+                </div>
+        </div>
+        
+        <p style="text-align:center; color:#555; font-size:0.7rem;">Desliza horizontalmente para ver todos los días</p>
 
         <div id="detalleDia">
             <h3 id="detalleFechaTitulo">Detalles del día</h3>
@@ -135,7 +171,7 @@
             </div>
             <div>
                 <label>Jalador (Nombre)</label>
-                <input type="text" id="nombreInput" placeholder="Ej: Hebem">
+                <input type="text" id="nombreInput" class="uppercase-input" placeholder="EJ: HEBEM" oninput="this.value = this.value.toUpperCase()">
             </div>
             <div>
                 <label>Jarras (S/4.50)</label> 
@@ -165,14 +201,34 @@
         <div id="listaPagos">
             </div>
     </div>
+
+    <div class="card" style="border-color: #555;">
+        <h2>📝 Notas</h2>
+        <p style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">
+            Espacio libre para anotar
+        </p>
+        <textarea id="notasGenerales" placeholder="Ejemplo:
+- Hebem pidió 20 soles adelanto (Lunes 5)
+- Juan debe una botella..."></textarea>
+    </div>
 </div>
 
+<script>
+    document.onkeydown = function(e) {
+        // Bloquear F12
+        if(e.keyCode == 123) return false;
+        
+        // Bloquear Ctrl+U, Ctrl+S, Ctrl+I, Ctrl+J
+        if(e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0) || e.keyCode == 'S'.charCodeAt(0) || e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) {
+            return false;
+        }
+    }
+</script>
+
 <script type="module">
-    // Importar funciones necesarias de Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Configuración de Firebase (Tus credenciales se mantienen igual)
     const firebaseConfig = {
         apiKey: "AIzaSyDObkCnt1nq0doCVwfiYiMhpfoSc7zhAXo",
         authDomain: "dynamo-jaladores.firebaseapp.com",
@@ -183,14 +239,11 @@
         measurementId: "G-51Q9X2TSH7"
     };
 
-    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- VARIABLES GLOBALES ---
-    // AQUI HICE EL CAMBIO DE PRECIO:
     const PRECIOS = { 
-        jarra: 4.50, // Precio actualizado
+        jarra: 4.50,
         botella: 4, 
         cerveza: 1, 
         palacete: 8 
@@ -198,40 +251,39 @@
     
     let currentDate = new Date();
     let allRecords = []; 
-
-    // Referencias DOM
     const fechaInput = document.getElementById('fechaInput');
     const btnGuardar = document.getElementById('btnGuardar');
     
-    // Setup Inicial
     fechaInput.valueAsDate = new Date();
     cargarDatos(); 
 
-    // --- FUNCIONES DE LÓGICA DE NEGOCIO ---
+    // --- Lógica del Bloc de Notas (LocalStorage) ---
+    const notasArea = document.getElementById('notasGenerales');
+    // Cargar notas al abrir
+    if(localStorage.getItem('dynamoNotas')) {
+        notasArea.value = localStorage.getItem('dynamoNotas');
+    }
+    // Guardar notas cada vez que se escribe
+    notasArea.addEventListener('input', function() {
+        localStorage.setItem('dynamoNotas', this.value);
+    });
 
     function calcularGanancia(r) {
-        // r = registro (objeto)
         let j = parseInt(r.jarras) || 0;
         let b = parseInt(r.botellas) || 0;
         let c = parseInt(r.cervezas) || 0;
         let p = parseInt(r.palacete) || 0;
 
-        // CÁLCULO DIRECTO (Sin bonos)
         let total = (j * PRECIOS.jarra) + 
                     (b * PRECIOS.botella) + 
                     (c * PRECIOS.cerveza) + 
                     (p * PRECIOS.palacete);
-        
-        // Mantenemos la estructura del objeto para que no falle el resto del código,
-        // pero 'tieneBono' siempre será falso.
         return {
             total: total,
             tieneBono: false, 
             puntos: 0 
         };
     }
-
-    // --- FUNCIONES FIREBASE ---
 
     async function guardarRegistro() {
         const nombre = document.getElementById('nombreInput').value.trim();
@@ -240,7 +292,7 @@
         const data = {
             fecha: fechaInput.value, 
             nombre: nombre.toLowerCase(), 
-            nombreDisplay: nombre, 
+            nombreDisplay: nombre.toUpperCase(), // Aseguramos guardar en mayúscula display
             jarras: parseInt(document.getElementById('jarras').value) || 0,
             botellas: parseInt(document.getElementById('botellas').value) || 0,
             cervezas: parseInt(document.getElementById('cervezas').value) || 0,
@@ -259,8 +311,8 @@
             document.getElementById('botellas').value = 0;
             document.getElementById('cervezas').value = 0;
             document.getElementById('palacete').value = 0;
+            document.getElementById('nombreInput').value = ''; // Limpiar nombre también
             
-            // Recargar datos
             await cargarDatos();
         } catch (e) {
             console.error("Error: ", e);
@@ -292,8 +344,6 @@
             document.getElementById('loading').style.display = 'none';
         }
     }
-
-    // --- RENDERIZADO CALENDARIO ---
 
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
@@ -331,8 +381,8 @@
                     const calc = calcularGanancia(reg);
                     const div = document.createElement('div');
                     div.className = 'worker-dot';
-                    // Nota: Aquí se mostrará el total actualizado sin bono y con jarras a 4.50
-                    div.innerHTML = `${reg.nombreDisplay}: <span>${calc.total}</span>`;
+                    // Nombre en mayúscula
+                    div.innerHTML = `${reg.nombreDisplay.toUpperCase()}: <span>${calc.total}</span>`;
                     cell.appendChild(div);
                 });
             }
@@ -342,7 +392,6 @@
         }
     }
 
-    // --- DETALLE DEL DÍA ---
     function verDetalleDia(fecha, registros) {
         const panel = document.getElementById('detalleDia');
         const lista = document.getElementById('listaDetalles');
@@ -359,16 +408,12 @@
 
         registros.forEach(r => {
             const calc = calcularGanancia(r);
-            // El bonoBadge ya no aparecerá nunca porque 'tieneBono' es falso
-            const bonoBadge = calc.tieneBono ? `<span class="detalle-bonus">★ LIMPIEZA (+20)</span>` : '';
-            
             const row = document.createElement('div');
             row.className = 'detalle-row';
             row.innerHTML = `
                 <div>
-                    <strong>${r.nombreDisplay}</strong><br>
+                    <strong>${r.nombreDisplay.toUpperCase()}</strong><br>
                     <small style="color:#888">${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P</small>
-                    ${bonoBadge}
                 </div>
                 <div style="text-align:right">
                     <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
@@ -380,7 +425,6 @@
         panel.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // --- REPORTE SEMANAL ---
 
     function getSunday(d) {
         d = new Date(d);
@@ -442,7 +486,7 @@
             for (const [nombre, total] of Object.entries(jaladores)) {
                 htmlSemana += `
                     <div class="payment-row">
-                        <span>${nombre}</span>
+                        <span>${nombre.toUpperCase()}</span>
                         <span class="pay-amount">S/ ${total.toFixed(2)}</span>
                     </div>
                 `;
@@ -452,7 +496,6 @@
         });
     }
 
-    // --- EVENTOS ---
     document.getElementById('btnGuardar').addEventListener('click', guardarRegistro);
     
     document.getElementById('prevMonth').addEventListener('click', () => {
@@ -466,6 +509,5 @@
     });
 
 </script>
-
 </body>
 </html>
