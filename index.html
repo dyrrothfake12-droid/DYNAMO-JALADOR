@@ -105,10 +105,26 @@
 
     </style>
 </head>
-<body>
+<>
 
 <div class="container">
     <h1>DYNAMO</h1>
+
+    <div class="card">
+        <div class="calendar-header">
+            <button class="calendar-btn" id="prevMonth">&#10094;</button>
+            <h3 id="mesLabel" style="margin:0">Cargando...</h3>
+            <button class="calendar-btn" id="nextMonth">&#10095;</button>
+        </div>
+        <div id="loading">Cargando datos de Firebase...</div>
+        <div class="calendar-grid" id="calendarGrid">
+            </div>
+
+        <div id="detalleDia">
+            <h3 id="detalleFechaTitulo">Detalles del día</h3>
+            <div id="listaDetalles"></div>
+        </div>
+    </div>
 
     <div class="card">
         <h2>Nuevo Registro</h2>
@@ -122,7 +138,7 @@
                 <input type="text" id="nombreInput" placeholder="Ej: Hebem">
             </div>
             <div>
-                <label>Jarras (S/3)</label>
+                <label>Jarras (S/4.50)</label> 
                 <input type="number" id="jarras" value="0" min="0">
             </div>
             <div>
@@ -142,22 +158,6 @@
     </div>
 
     <div class="card">
-        <div class="calendar-header">
-            <button class="calendar-btn" id="prevMonth">&#10094;</button>
-            <h3 id="mesLabel" style="margin:0">Cargando...</h3>
-            <button class="calendar-btn" id="nextMonth">&#10095;</button>
-        </div>
-        <div id="loading">Cargando datos de Firebase...</div>
-        <div class="calendar-grid" id="calendarGrid">
-            </div>
-
-        <div id="detalleDia">
-            <h3 id="detalleFechaTitulo">Detalles del día</h3>
-            <div id="listaDetalles"></div>
-        </div>
-    </div>
-
-    <div class="card">
         <h2>Pagos Semanales</h2>
         <p style="color:#888; text-align: center; font-size:0.9rem;">
             Ciclo: Domingo a Sábado | Pago: Martes
@@ -172,7 +172,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Configuración de Firebase (Tus credenciales)
+    // Configuración de Firebase (Tus credenciales se mantienen igual)
     const firebaseConfig = {
         apiKey: "AIzaSyDObkCnt1nq0doCVwfiYiMhpfoSc7zhAXo",
         authDomain: "dynamo-jaladores.firebaseapp.com",
@@ -188,9 +188,16 @@
     const db = getFirestore(app);
 
     // --- VARIABLES GLOBALES ---
-    const PRECIOS = { jarra: 3, botella: 4, cerveza: 1, palacete: 8, bono: 20 };
+    // AQUI HICE EL CAMBIO DE PRECIO:
+    const PRECIOS = { 
+        jarra: 4.50, // Precio actualizado
+        botella: 4, 
+        cerveza: 1, 
+        palacete: 8 
+    }; 
+    
     let currentDate = new Date();
-    let allRecords = []; // Almacén local de datos traídos de FB
+    let allRecords = []; 
 
     // Referencias DOM
     const fechaInput = document.getElementById('fechaInput');
@@ -198,7 +205,7 @@
     
     // Setup Inicial
     fechaInput.valueAsDate = new Date();
-    cargarDatos(); // Primera carga
+    cargarDatos(); 
 
     // --- FUNCIONES DE LÓGICA DE NEGOCIO ---
 
@@ -209,23 +216,18 @@
         let c = parseInt(r.cervezas) || 0;
         let p = parseInt(r.palacete) || 0;
 
-        let base = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete);
+        // CÁLCULO DIRECTO (Sin bonos)
+        let total = (j * PRECIOS.jarra) + 
+                    (b * PRECIOS.botella) + 
+                    (c * PRECIOS.cerveza) + 
+                    (p * PRECIOS.palacete);
         
-        // Lógica de Puntos para Limpieza
-        // 1 Jarra/Botella/Palacete = 1 punto.
-        // 6 Cervezas = 1 punto.
-        let puntosCerveza = Math.floor(c / 6);
-        let puntosTotales = j + b + p + puntosCerveza;
-
-        let bono = 0;
-        if (puntosTotales >= 10) {
-            bono = PRECIOS.bono;
-        }
-
+        // Mantenemos la estructura del objeto para que no falle el resto del código,
+        // pero 'tieneBono' siempre será falso.
         return {
-            total: base + bono,
-            tieneBono: bono > 0,
-            puntos: puntosTotales
+            total: total,
+            tieneBono: false, 
+            puntos: 0 
         };
     }
 
@@ -236,9 +238,9 @@
         if (!nombre) return alert("Ingresa un nombre");
 
         const data = {
-            fecha: fechaInput.value, // YYYY-MM-DD
-            nombre: nombre.toLowerCase(), // Guardamos en minúscula para agrupar mejor
-            nombreDisplay: nombre, // Guardamos como lo escribió para mostrarlo bonito
+            fecha: fechaInput.value, 
+            nombre: nombre.toLowerCase(), 
+            nombreDisplay: nombre, 
             jarras: parseInt(document.getElementById('jarras').value) || 0,
             botellas: parseInt(document.getElementById('botellas').value) || 0,
             cervezas: parseInt(document.getElementById('cervezas').value) || 0,
@@ -272,7 +274,6 @@
     async function cargarDatos() {
         document.getElementById('loading').style.display = 'block';
         
-        // Traemos TODO para simplificar el cálculo semanal (en una app grande se filtra por fecha)
         const q = query(collection(db, "registros"), orderBy("fecha", "desc"));
         
         try {
@@ -301,50 +302,42 @@
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         
-        // Titulo
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         document.getElementById('mesLabel').textContent = `${monthNames[month]} ${year}`;
 
-        // Headers Dias
         ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].forEach(d => {
             grid.innerHTML += `<div class="day-head">${d}</div>`;
         });
 
-        // Espacios vacios
         const firstDay = new Date(year, month, 1).getDay();
         for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
 
-        // Dias
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         
         for(let i=1; i<=daysInMonth; i++) {
             const cell = document.createElement('div');
             cell.className = 'day-cell';
             
-            // Fecha String YYYY-MM-DD
             const diaStr = i.toString().padStart(2, '0');
             const mesStr = (month + 1).toString().padStart(2, '0');
             const fechaKey = `${year}-${mesStr}-${diaStr}`;
             
             cell.innerHTML = `<span class="day-num">${i}</span>`;
             
-            // Filtrar registros de este día
             const registrosDia = allRecords.filter(r => r.fecha === fechaKey);
             
-            // Mostrar resumen pequeño en el calendario
             if(registrosDia.length > 0) {
                 registrosDia.forEach(reg => {
                     const calc = calcularGanancia(reg);
                     const div = document.createElement('div');
                     div.className = 'worker-dot';
+                    // Nota: Aquí se mostrará el total actualizado sin bono y con jarras a 4.50
                     div.innerHTML = `${reg.nombreDisplay}: <span>${calc.total}</span>`;
                     cell.appendChild(div);
                 });
             }
 
-            // Click para ver detalles
             cell.onclick = () => verDetalleDia(fechaKey, registrosDia);
-
             grid.appendChild(cell);
         }
     }
@@ -366,6 +359,7 @@
 
         registros.forEach(r => {
             const calc = calcularGanancia(r);
+            // El bonoBadge ya no aparecerá nunca porque 'tieneBono' es falso
             const bonoBadge = calc.tieneBono ? `<span class="detalle-bonus">★ LIMPIEZA (+20)</span>` : '';
             
             const row = document.createElement('div');
@@ -378,13 +372,11 @@
                 </div>
                 <div style="text-align:right">
                     <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
-                    <small style="color:#666">Puntos: ${calc.puntos}</small>
                 </div>
             `;
             lista.appendChild(row);
         });
         
-        // Scroll suave hacia el detalle
         panel.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -393,7 +385,7 @@
     function getSunday(d) {
         d = new Date(d);
         const day = d.getDay();
-        const diff = d.getDate() - day; // ajustar al domingo
+        const diff = d.getDate() - day; 
         return new Date(d.setDate(diff));
     }
 
@@ -407,20 +399,17 @@
         const container = document.getElementById('listaPagos');
         container.innerHTML = '';
 
-        // Agrupar por Semana (Key: "YYYY-MM-DD" del domingo)
         const weeklyGroups = {};
 
         allRecords.forEach(r => {
-            // Arreglo zona horaria simple
             const parts = r.fecha.split('-');
             const fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
             
             const sunday = getSunday(fechaObj);
-            const sundayKey = sunday.toISOString().split('T')[0]; // ID de la semana
+            const sundayKey = sunday.toISOString().split('T')[0];
 
             if(!weeklyGroups[sundayKey]) weeklyGroups[sundayKey] = {};
             
-            // Agrupar por Jalador dentro de la semana
             const nombre = r.nombreDisplay; 
             if(!weeklyGroups[sundayKey][nombre]) weeklyGroups[sundayKey][nombre] = 0;
 
@@ -428,7 +417,6 @@
             weeklyGroups[sundayKey][nombre] += calc.total;
         });
 
-        // Ordenar semanas (más reciente primero)
         const sortedWeeks = Object.keys(weeklyGroups).sort().reverse();
 
         sortedWeeks.forEach(sundayKey => {
@@ -436,16 +424,12 @@
             const sundayDate = new Date(parts[0], parts[1]-1, parts[2]);
             
             const saturdayDate = addDays(sundayDate, 6);
-            const paymentDate = addDays(sundayDate, 9); // Domingo + 9 dias = Martes de la sgte semana (Dom->0, Lun->1... Sab->6, Dom->7, Lun->8, Mar->9)
-            // Espera, logica de usuario: "una semana se cuenta desde domingo a sabado, los pagos son los dias martes"
-            // Si la semana acaba el Sabado 10, el pago es el Martes 13.
-            // Sabado + 3 dias = Martes.
+            const paymentDate = addDays(sundayDate, 9); 
 
             const options = { day: 'numeric', month: 'short' };
             const rangeStr = `${sundayDate.toLocaleDateString('es-ES', options)} - ${saturdayDate.toLocaleDateString('es-ES', options)}`;
             const payStr = `Cobran: Martes ${paymentDate.toLocaleDateString('es-ES', options)}`;
 
-            // HTML de la semana
             let htmlSemana = `
                 <div class="payment-group">
                     <div class="payment-header">
@@ -454,13 +438,12 @@
                     </div>
             `;
 
-            // Listar jaladores de esa semana
             const jaladores = weeklyGroups[sundayKey];
             for (const [nombre, total] of Object.entries(jaladores)) {
                 htmlSemana += `
                     <div class="payment-row">
                         <span>${nombre}</span>
-                        <span class="pay-amount">S/ ${total}</span>
+                        <span class="pay-amount">S/ ${total.toFixed(2)}</span>
                     </div>
                 `;
             }
