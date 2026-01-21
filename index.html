@@ -37,6 +37,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             margin-bottom: 25px;
             border: 1px solid #333;
+            position: relative; /* Para el candado */
         }
 
         .form-grid {
@@ -138,33 +139,51 @@
 
 
         /* --- NOTIFICACIÓN TOAST (Efecto elegante) --- */
-#toast {
-    visibility: hidden; /* Oculto por defecto */
-    min-width: 250px;
-    margin-left: -125px; /* Mitad del ancho para centrar */
-    background-color: #1a1a1a;
-    color: #fff;
-    text-align: center;
-    border-radius: 50px; /* Bordes redondos */
-    padding: 16px;
-    position: fixed;
-    z-index: 100; /* Que se vea encima de todo */
-    left: 50%;
-    bottom: 30px;
-    font-size: 1rem;
-    border: 2px solid var(--success); /* Borde verde neón */
-    box-shadow: 0 0 20px rgba(0, 230, 118, 0.6); /* Resplandor */
-    opacity: 0;
-    transition: opacity 0.5s, bottom 0.5s, transform 0.3s;
-}
+        #toast {
+            visibility: hidden; /* Oculto por defecto */
+            min-width: 250px;
+            margin-left: -125px; /* Mitad del ancho para centrar */
+            background-color: #1a1a1a;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px; /* Bordes redondos */
+            padding: 16px;
+            position: fixed;
+            z-index: 100; /* Que se vea encima de todo */
+            left: 50%;
+            bottom: 30px;
+            font-size: 1rem;
+            border: 2px solid var(--success); /* Borde verde neón */
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.6); /* Resplandor */
+            opacity: 0;
+            transition: opacity 0.5s, bottom 0.5s, transform 0.3s;
+        }
 
-/* Clase para mostrarlo */
-#toast.show {
-    visibility: visible;
-    opacity: 1;
-    bottom: 50px; /* Sube un poquito al aparecer */
-    transform: scale(1.05);
-}
+        /* Clase para mostrarlo */
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px; /* Sube un poquito al aparecer */
+            transform: scale(1.05);
+        }
+
+        /* --- ESTILOS DEL CANDADO (BLOQUEO) --- */
+        .locked-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 10;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+            transition: opacity 0.3s;
+        }
+        .locked-overlay span { font-size: 3rem; margin-bottom: 10px; }
+        .locked-overlay p { color: #fff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
     </style>
 </head>
@@ -192,7 +211,12 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="registroCard">
+        <div class="locked-overlay" id="lockOverlay" onclick="unlockRegistry()">
+            <span>🔒</span>
+            <p>Toca para desbloquear</p>
+        </div>
+
         <h2>Nuevo Registro</h2>
         <div class="form-grid">
             <div>
@@ -204,20 +228,24 @@
                 <input type="text" id="nombreInput" class="uppercase-input" placeholder="HEBEM" oninput="this.value = this.value.toUpperCase()">
             </div>
             <div>
-                <label>Jarras (S/4.50)</label> 
-                <input type="number" id="jarras" value="" min="">
+                <label>Jarras (S/3.00)</label> 
+                <input type="number" id="jarras" placeholder="">
             </div>
             <div>
-                <label>Botellas (S/4)</label>
-                <input type="number" id="botellas" value="" min="">
+                <label>Botellas (S/4.00)</label>
+                <input type="number" id="botellas" placeholder="">
             </div>
             <div>
-                <label>Cervezas (S/1)</label>
-                <input type="number" id="cervezas" value="" min="">
+                <label>Cervezas (S/1.00)</label>
+                <input type="number" id="cervezas" placeholder="">
             </div>
             <div>
-                <label>Palacete (S/8)</label>
-                <input type="number" id="palacete" value="" min="">
+                <label>Palacete (S/8.00)</label>
+                <input type="number" id="palacete" placeholder="">
+            </div>
+            <div>
+                <label>Botellas +100 (S/5.00)</label>
+                <input type="number" id="botellas100" placeholder="">
             </div>
         </div>
         <button class="btn-save" id="btnGuardar">Guardar Producción</button>
@@ -256,8 +284,6 @@
             return false;
         }
     }
-
-
 </script>
 
 <script type="module">
@@ -277,7 +303,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const PRECIOS = { jarra: 4.50, botella: 4, cerveza: 1, palacete: 8 }; 
+    // --- CONFIGURACIÓN DE PRECIOS Y META ---
+    const PRECIOS = { 
+        jarra: 3.00,       // Antes 4.50, ahora 3.00
+        botella: 4.00,     // Normal
+        cerveza: 1.00,     // Normal
+        palacete: 8.00,    // Normal
+        botellas100: 5.00, // Nuevo item
+        bonoMeta: 20.00    // Bono Limpieza
+    }; 
     
     let currentDate = new Date();
     let allRecords = []; 
@@ -286,6 +320,28 @@
     
     fechaInput.valueAsDate = new Date();
     cargarDatos(); 
+
+    // --- LÓGICA DE BLOQUEO (CANDADO) ---
+    let lockTimer;
+    window.unlockRegistry = function() {
+        const password = prompt("Ingrese contraseña de administrador:");
+        if (password === "adminhm") {
+            // Desbloquear
+            document.getElementById('lockOverlay').style.display = 'none';
+            lanzarToast("🔓 Sistema desbloqueado por 10 min");
+            
+            // Reiniciar timer si ya existía
+            if (lockTimer) clearTimeout(lockTimer);
+            
+            // Volver a bloquear en 10 minutos (600,000 ms)
+            lockTimer = setTimeout(() => {
+                document.getElementById('lockOverlay').style.display = 'flex';
+                lanzarToast("🔒 Sistema bloqueado por inactividad");
+            }, 600000); 
+        } else {
+            alert("Contraseña incorrecta");
+        }
+    }
 
     // --- Variables para la Paleta ---
     window.currentColor = null; 
@@ -304,12 +360,9 @@
     function lanzarToast(mensaje) {
         const x = document.getElementById("toast");
         if(x) {
-            x.textContent = "✅ " + mensaje;
+            x.textContent = mensaje;
             x.className = "show";
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-        } else {
-            // Fallback por si no pegaste el HTML del toast
-            console.log(mensaje);
         }
     }
 
@@ -333,19 +386,40 @@
         renderMiniCalendar(); 
     };
 
+    // --- CÁLCULO DE GANANCIA Y META ---
     function calcularGanancia(r) {
         let j = parseInt(r.jarras) || 0;
         let b = parseInt(r.botellas) || 0;
         let c = parseInt(r.cervezas) || 0;
         let p = parseInt(r.palacete) || 0;
-        let total = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete);
-        return { total: total };
+        let b100 = parseInt(r.botellas100) || 0;
+
+        // Cálculo de comisión base
+        let total = (j * PRECIOS.jarra) + 
+                    (b * PRECIOS.botella) + 
+                    (c * PRECIOS.cerveza) + 
+                    (p * PRECIOS.palacete) +
+                    (b100 * PRECIOS.botellas100);
+
+        // Lógica de META: Llegar a 10 puntos
+        // 1 Jarra = 1 punto
+        // 1 Botella = 1 punto
+        // 6 Cervezas = 1 punto (Math.floor(c / 6))
+        let puntosMeta = j + b + Math.floor(c / 6);
+        let cumplioMeta = false;
+
+        if (puntosMeta >= 10) {
+            total += PRECIOS.bonoMeta; // Se suma los 20 soles de limpieza
+            cumplioMeta = true;
+        }
+
+        return { total: total, meta: cumplioMeta, puntos: puntosMeta };
     }
 
-    // --- FUNCIÓN GUARDAR ACTUALIZADA CON TOAST ---
+    // --- FUNCIÓN GUARDAR ---
     async function guardarRegistro() {
         const nombre = document.getElementById('nombreInput').value.trim();
-        if (!nombre) return lanzarToast("¡Falta el nombre!"); // Usa Toast para error simple
+        if (!nombre) return lanzarToast("❌ ¡Falta el nombre!");
 
         const data = {
             fecha: fechaInput.value, 
@@ -355,6 +429,7 @@
             botellas: parseInt(document.getElementById('botellas').value) || 0,
             cervezas: parseInt(document.getElementById('cervezas').value) || 0,
             palacete: parseInt(document.getElementById('palacete').value) || 0,
+            botellas100: parseInt(document.getElementById('botellas100').value) || 0, // Nuevo campo
             timestamp: new Date()
         };
 
@@ -366,16 +441,16 @@
         try {
             await addDoc(collection(db, "registros"), data);
             
-            // ANIMACIÓN DE ÉXITO
-            lanzarToast("¡Registro guardado!");
+            lanzarToast("✅ ¡Registro guardado!");
 
-            // Limpiar campos
-            document.getElementById('jarras').value = 0;
-            document.getElementById('botellas').value = 0;
-            document.getElementById('cervezas').value = 0;
-            document.getElementById('palacete').value = 0;
+            // Limpiar campos (asignar string vacía para que no se vea el 0)
+            document.getElementById('jarras').value = '';
+            document.getElementById('botellas').value = '';
+            document.getElementById('cervezas').value = '';
+            document.getElementById('palacete').value = '';
+            document.getElementById('botellas100').value = '';
             document.getElementById('nombreInput').value = ''; 
-            document.getElementById('nombreInput').focus(); // Volver al campo nombre
+            document.getElementById('nombreInput').focus();
             
             await cargarDatos();
         } catch (e) {
@@ -436,7 +511,9 @@
                     const calc = calcularGanancia(reg);
                     const div = document.createElement('div');
                     div.className = 'worker-dot';
-                    div.innerHTML = `${reg.nombreDisplay.toUpperCase()}: <span>${calc.total}</span>`;
+                    // Si completó meta, ponemos un emoji de estrella o limpieza
+                    const metaIcon = calc.meta ? '⭐' : ''; 
+                    div.innerHTML = `${reg.nombreDisplay.toUpperCase()}${metaIcon}: <span>${calc.total}</span>`;
                     cell.appendChild(div);
                 });
             }
@@ -502,9 +579,23 @@
             const calc = calcularGanancia(r);
             const row = document.createElement('div');
             row.className = 'detalle-row';
+            
+            // Construir resumen de items
+            let items = `${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P`;
+            if(r.botellas100 > 0) items += ` - ${r.botellas100}(+100)`;
+            
+            // Mensaje de meta
+            let metaHtml = calc.meta ? '<span style="color:#ffea00; font-size:0.8rem;">⭐ META CUMPLIDA (+20)</span>' : `<span style="color:#666; font-size:0.8rem;">Puntos: ${calc.puntos}/10</span>`;
+
             row.innerHTML = `
-                <div><strong>${r.nombreDisplay.toUpperCase()}</strong><br><small style="color:#888">${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P</small></div>
-                <div style="text-align:right"><div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div></div>`;
+                <div>
+                    <strong>${r.nombreDisplay.toUpperCase()}</strong><br>
+                    <small style="color:#888">${items}</small><br>
+                    ${metaHtml}
+                </div>
+                <div style="text-align:right; display:flex; align-items:center;">
+                    <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
+                </div>`;
             lista.appendChild(row);
         });
         panel.scrollIntoView({ behavior: 'smooth' });
