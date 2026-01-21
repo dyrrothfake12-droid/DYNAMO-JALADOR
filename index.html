@@ -296,7 +296,7 @@
 
     <div class="card" style="border-color: #555;">
         <h2>📝 Notas</h2>
-        <textarea id="notasGenerales" placeholder="Espacio libre para anotar..."></textarea>
+        <textarea id="notasGenerales" placeholder="Espacio libre para anotar"></textarea>
     </div>
 
     <div class="card" style="border: 1px solid var(--primary);">
@@ -363,7 +363,7 @@
         if (password === "adminhm") {
             // Desbloquear
             document.getElementById('lockOverlay').style.display = 'none';
-            lanzarToast("🔓 Sistema desbloqueado por 10 min");
+            lanzarToast("🔓 Sistema desbloqueado por 15 min");
             
             // Reiniciar timer si ya existía
             if (lockTimer) clearTimeout(lockTimer);
@@ -372,7 +372,7 @@
             lockTimer = setTimeout(() => {
                 document.getElementById('lockOverlay').style.display = 'flex';
                 lanzarToast("🔒 Sistema bloqueado por inactividad");
-            }, 600000); 
+            }, 900000); 
         } else {
             alert("Contraseña incorrecta");
         }
