@@ -34,37 +34,33 @@
             color: var(--secondary); 
             margin-bottom: 20px; 
             text-transform: uppercase;
-        font-family: 'Orbitron', sans-serif; /* Fuente futurista/tecnológica */
-    letter-spacing: 2px;
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
- }
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+        }
 
- h1 {
-    font-family: 'Orbitron', sans-serif; /* Usando la fuente futurista que sugerí antes */
-    font-size: 4rem;             /* Tamaño extra grande */
-    font-weight: 900;            /* Grosor máximo */
-    margin: 30px 0;              /* Espacio arriba y abajo */
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 8px;         /* Espaciado entre letras para que se vea imponente */
-    
-    /* Efecto de Color Neón Degradado */
-    background: linear-gradient(to bottom, #fff 20%, var(--secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    
-    /* Sombra de brillo neón */
-    filter: drop-shadow(0 0 15px rgba(0, 188, 212, 0.6));
-}
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 30px 0;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            background: linear-gradient(to bottom, #fff 20%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(0, 188, 212, 0.6));
+        }
 
-/* Ajuste para celulares (para que no se desborde) */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 2.5rem; 
-        letter-spacing: 4px;
-    }
-}
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem; 
+                letter-spacing: 4px;
+            }
+        }
+        
         .card {
             background: var(--card-bg);
             padding: 20px;
@@ -72,7 +68,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             margin-bottom: 25px;
             border: 1px solid #333;
-            position: relative; /* Para el candado */
+            position: relative;
         }
 
         .form-grid {
@@ -115,7 +111,21 @@
         .worker-dot span { color: var(--success); font-weight: bold; }
 
         #detalleDia { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
-        .detalle-row { display: flex; justify-content: space-between; padding: 8px; background: #222; margin-bottom: 5px; border-radius: 4px; }
+        .detalle-row { display: flex; justify-content: space-between; padding: 8px; background: #222; margin-bottom: 5px; border-radius: 4px; align-items: center; }
+
+        /* ESTILO BOTÓN BORRAR */
+        .btn-borrar {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        .btn-borrar:hover { background: #d50000; }
 
         .payment-group { margin-bottom: 20px; border: 1px solid #444; border-radius: 8px; overflow: hidden; }
         .payment-header { background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary); display: flex; justify-content: space-between; }
@@ -128,94 +138,32 @@
 
         textarea#notasGenerales { width: 100%; height: 150px; background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 6px; resize: none; font-family: monospace; }
 
-        /* --- NUEVOS ESTILOS PARA LA VISTA GENERAL Y PALETA --- */
+        /* PALETA */
         .palette {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #252525;
-            border-radius: 8px;
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: #252525; border-radius: 8px;
         }
         .color-btn {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: 0.2s;
+            width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s;
         }
         .color-btn.selected { transform: scale(1.2); border-color: white; box-shadow: 0 0 10px white; }
 
-        /* MINI CALENDARIO (SIN SCROLL) */
-        .mini-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
-            width: 100%; /* Se adapta a la pantalla */
-        }
+        /* MINI CALENDARIO */
+        .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; width: 100%; }
         .mini-cell {
-            background: #222;
-            aspect-ratio: 1/1; /* Cuadrado perfecto */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border: 1px solid #333;
-            color: #888;
+            background: #222; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: 1px solid #333; color: #888;
         }
         .mini-cell.has-money { color: var(--success); font-weight: bold; border-color: #444; }
-        /* Indicador de que tiene datos */
         .mini-dot { width: 4px; height: 4px; background: var(--success); border-radius: 50%; margin-top: 2px; }
 
-
-        /* --- NOTIFICACIÓN TOAST (Efecto elegante) --- */
+        /* TOAST */
         #toast {
-            visibility: hidden; /* Oculto por defecto */
-            min-width: 250px;
-            margin-left: -125px; /* Mitad del ancho para centrar */
-            background-color: #1a1a1a;
-            color: #fff;
-            text-align: center;
-            border-radius: 50px; /* Bordes redondos */
-            padding: 16px;
-            position: fixed;
-            z-index: 100; /* Que se vea encima de todo */
-            left: 50%;
-            bottom: 30px;
-            font-size: 1rem;
-            border: 2px solid var(--success); /* Borde verde neón */
-            box-shadow: 0 0 20px rgba(0, 230, 118, 0.6); /* Resplandor */
-            opacity: 0;
-            transition: opacity 0.5s, bottom 0.5s, transform 0.3s;
+            visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #1a1a1a; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 100; left: 50%; bottom: 30px; font-size: 1rem; border: 2px solid var(--success); box-shadow: 0 0 20px rgba(0, 230, 118, 0.6); opacity: 0; transition: opacity 0.5s, bottom 0.5s, transform 0.3s;
         }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; transform: scale(1.05); }
 
-        /* Clase para mostrarlo */
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px; /* Sube un poquito al aparecer */
-            transform: scale(1.05);
-        }
-
-        /* --- ESTILOS DEL CANDADO (BLOQUEO) --- */
+        /* CANDADO */
         .locked-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 10;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(2px);
-            transition: opacity 0.3s;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(2px); transition: opacity 0.3s;
         }
         .locked-overlay span { font-size: 3rem; margin-bottom: 10px; }
         .locked-overlay p { color: #fff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
@@ -244,6 +192,15 @@
             <h3 id="detalleFechaTitulo">Detalles del día</h3>
             <div id="listaDetalles"></div>
         </div>
+    </div>
+
+
+    <div class="card">
+        <h2>Pagos Semanales</h2>
+        <p style="color:#888; text-align: center; font-size:0.9rem;">
+            Ciclo: Domingo a Sábado | Pago: Martes
+        </p>
+        <div id="listaPagos"></div>
     </div>
 
     <div class="card" id="registroCard">
@@ -286,18 +243,6 @@
         <button class="btn-save" id="btnGuardar">Guardar Producción</button>
     </div>
 
-    <div class="card">
-        <h2>Pagos Semanales</h2>
-        <p style="color:#888; text-align: center; font-size:0.9rem;">
-            Ciclo: Domingo a Sábado | Pago: Martes
-        </p>
-        <div id="listaPagos"></div>
-    </div>
-
-    <div class="card" style="border-color: #555;">
-        <h2>📝 Notas</h2>
-        <textarea id="notasGenerales" placeholder="Espacio libre para anotar"></textarea>
-    </div>
 
     <div class="card" style="border: 1px solid var(--primary);">
         <h2>🎨 Vista General (Color)</h2>
@@ -309,6 +254,11 @@
 
         <div class="mini-grid" id="miniCalendar">
             </div>
+    </div>
+
+    <div class="card" style="border-color: #555;">
+        <h2>📝 Notas</h2>
+        <textarea id="notasGenerales" placeholder="Espacio libre para anotar"></textarea>
     </div>
 </div>
 <div id="toast">✅ ¡Registro Guardado con Éxito!</div>
@@ -322,8 +272,9 @@
 </script>
 
 <script type="module">
+    // *** IMPORTANTE: AQUI SE AGREGÓ deleteDoc y doc ***
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDObkCnt1nq0doCVwfiYiMhpfoSc7zhAXo",
@@ -361,20 +312,36 @@
     window.unlockRegistry = function() {
         const password = prompt("Ingrese contraseña de administrador:");
         if (password === "adminhm") {
-            // Desbloquear
             document.getElementById('lockOverlay').style.display = 'none';
             lanzarToast("🔓 Sistema desbloqueado por 15 min");
-            
-            // Reiniciar timer si ya existía
             if (lockTimer) clearTimeout(lockTimer);
-            
-            // Volver a bloquear en 10 minutos (600,000 ms)
             lockTimer = setTimeout(() => {
                 document.getElementById('lockOverlay').style.display = 'flex';
                 lanzarToast("🔒 Sistema bloqueado por inactividad");
             }, 900000); 
         } else {
             alert("Contraseña incorrecta");
+        }
+    }
+
+    // --- FUNCION BORRAR (CON SEGURIDAD) ---
+    window.borrarRegistro = async function(id) {
+        const password = prompt("Ingrese contraseña de administrador para BORRAR:");
+        if (password !== "adminhm") {
+            return alert("Contraseña incorrecta. No se borró nada.");
+        }
+
+        if (confirm("¿Estás seguro de eliminar este registro? Esta acción no se puede deshacer.")) {
+            try {
+                await deleteDoc(doc(db, "registros", id));
+                lanzarToast("🗑️ Registro eliminado");
+                await cargarDatos(); 
+                // Opcional: Cerrar detalle si se borra el ultimo
+                document.getElementById('detalleDia').style.display = 'none';
+            } catch (e) {
+                console.error("Error al borrar:", e);
+                lanzarToast("❌ Error al eliminar");
+            }
         }
     }
 
@@ -421,7 +388,7 @@
         renderMiniCalendar(); 
     };
 
-    // --- CÁLCULO DE GANANCIA Y META ---
+    // --- CÁLCULO DE GANANCIA Y META (SÁBADOS = 15) ---
     function calcularGanancia(r) {
         let j = parseInt(r.jarras) || 0;
         let b = parseInt(r.botellas) || 0;
@@ -436,19 +403,23 @@
                     (p * PRECIOS.palacete) +
                     (b100 * PRECIOS.botellas100);
 
-        // Lógica de META: Llegar a 10 puntos
-        // 1 Jarra = 1 punto
-        // 1 Botella = 1 punto
-        // 6 Cervezas = 1 punto (Math.floor(c / 6))
+        // Verificar si es sábado
+        let parts = r.fecha.split('-'); 
+        let fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
+        let esSabado = fechaObj.getDay() === 6;
+
+        let metaObjetivo = esSabado ? 15 : 10;
+
+        // Lógica de Puntos
         let puntosMeta = j + b + Math.floor(c / 6);
         let cumplioMeta = false;
 
-        if (puntosMeta >= 10) {
-            total += PRECIOS.bonoMeta; // Se suma los 20 soles de limpieza
+        if (puntosMeta >= metaObjetivo) {
+            total += PRECIOS.bonoMeta; 
             cumplioMeta = true;
         }
 
-        return { total: total, meta: cumplioMeta, puntos: puntosMeta };
+        return { total: total, meta: cumplioMeta, puntos: puntosMeta, metaObjetivo: metaObjetivo };
     }
 
     // --- FUNCIÓN GUARDAR ---
@@ -464,11 +435,10 @@
             botellas: parseInt(document.getElementById('botellas').value) || 0,
             cervezas: parseInt(document.getElementById('cervezas').value) || 0,
             palacete: parseInt(document.getElementById('palacete').value) || 0,
-            botellas100: parseInt(document.getElementById('botellas100').value) || 0, // Nuevo campo
+            botellas100: parseInt(document.getElementById('botellas100').value) || 0, 
             timestamp: new Date()
         };
 
-        // Efecto visual en el botón
         btnGuardar.textContent = "Guardando...";
         btnGuardar.disabled = true;
         btnGuardar.style.background = "#333"; 
@@ -478,7 +448,6 @@
             
             lanzarToast("✅ ¡Registro guardado!");
 
-            // Limpiar campos (asignar string vacía para que no se vea el 0)
             document.getElementById('jarras').value = '';
             document.getElementById('botellas').value = '';
             document.getElementById('cervezas').value = '';
@@ -492,7 +461,6 @@
             console.error("Error: ", e);
             lanzarToast("❌ Error al guardar");
         } finally {
-            // Restaurar botón
             btnGuardar.textContent = "Guardar Producción";
             btnGuardar.disabled = false;
             btnGuardar.style.background = "linear-gradient(90deg, var(--primary), #651fff)";
@@ -546,7 +514,6 @@
                     const calc = calcularGanancia(reg);
                     const div = document.createElement('div');
                     div.className = 'worker-dot';
-                    // Si completó meta, ponemos un emoji de estrella o limpieza
                     const metaIcon = calc.meta ? '⭐' : ''; 
                     div.innerHTML = `${reg.nombreDisplay.toUpperCase()}${metaIcon}: <span>${calc.total}</span>`;
                     cell.appendChild(div);
@@ -615,21 +582,23 @@
             const row = document.createElement('div');
             row.className = 'detalle-row';
             
-            // Construir resumen de items
             let items = `${r.jarras}J - ${r.botellas}B - ${r.cervezas}C - ${r.palacete}P`;
             if(r.botellas100 > 0) items += ` - ${r.botellas100}(+100)`;
             
-            // Mensaje de meta
-            let metaHtml = calc.meta ? '<span style="color:#ffea00; font-size:0.8rem;">⭐ META CUMPLIDA (+20)</span>' : `<span style="color:#666; font-size:0.8rem;">Puntos: ${calc.puntos}/10</span>`;
+            let metaHtml = calc.meta ? 
+                '<span style="color:#ffea00; font-size:0.8rem;">⭐ META CUMPLIDA (+20)</span>' : 
+                `<span style="color:#666; font-size:0.8rem;">Puntos: ${calc.puntos}/${calc.metaObjetivo}</span>`;
 
+            // AQUI SE AGREGO EL BOTON ELIMINAR CON LA FUNCION ONCLICK
             row.innerHTML = `
                 <div>
                     <strong>${r.nombreDisplay.toUpperCase()}</strong><br>
                     <small style="color:#888">${items}</small><br>
                     ${metaHtml}
                 </div>
-                <div style="text-align:right; display:flex; align-items:center;">
+                <div style="text-align:right; display:flex; align-items:center; gap:10px;">
                     <div style="color:var(--success); font-weight:bold; font-size:1.2rem;">S/ ${calc.total}</div>
+                    <button class="btn-borrar" onclick="borrarRegistro('${r.id}')">Eliminar</button>
                 </div>`;
             lista.appendChild(row);
         });
