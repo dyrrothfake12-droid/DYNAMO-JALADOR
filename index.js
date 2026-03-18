@@ -33,7 +33,7 @@ fechaInput.valueAsDate = new Date();
 
 // --- INICIO DE APP ---
 async function iniciarApp() {
-    await limpiezaMensualAutomatica(); // Ahora limpia cada mes y medio
+    await limpiezaMensualAutomatica();
     await cargarDatos();
 }
 iniciarApp();
@@ -42,38 +42,22 @@ iniciarApp();
 async function limpiezaMensualAutomatica() {
     const ultimaLimpieza = localStorage.getItem('ultimaLimpiezaDynamo');
     const hoy = new Date();
-    
-    // 45 días en milisegundos (1.5 meses aprox)
-    // 45 días * 24 horas * 60 min * 60 seg * 1000 ms
     const limiteMs = 45 * 24 * 60 * 60 * 1000;
 
-    // Si no hay registro de limpieza o pasaron más de 45 días desde la última ejecución
     if (!ultimaLimpieza || (hoy - new Date(ultimaLimpieza)) > limiteMs) {
         console.log("Iniciando limpieza de datos antiguos (más de 45 días)...");
-        
         const hace45Dias = new Date();
         hace45Dias.setDate(hace45Dias.getDate() - 45);
-        
-        // Formato YYYY-MM-DD para comparar en Firestore
         const fechaLimiteStr = hace45Dias.toISOString().split('T')[0];
 
-        // Consulta registros donde la fecha sea menor a la de hace 45 días
         const q = query(collection(db, "registros"), where("fecha", "<", fechaLimiteStr));
-        
         try {
             const snapshot = await getDocs(q);
             const promesasBorrado = snapshot.docs.map(d => deleteDoc(doc(db, "registros", d.id)));
-            
             await Promise.all(promesasBorrado);
-            
-            // Guardamos la fecha de hoy como la última vez que se ejecutó la limpieza
             localStorage.setItem('ultimaLimpiezaDynamo', hoy.toISOString());
             console.log(`Limpieza completada. Se eliminaron registros anteriores al: ${fechaLimiteStr}`);
-        } catch (error) {
-            console.error("Error en el proceso de limpieza:", error);
-        }
-    } else {
-        console.log("No hace falta limpieza aún. Próxima revisión en unos días.");
+        } catch (error) { console.error("Error en limpieza:", error); }
     }
 }
 
@@ -81,21 +65,23 @@ async function limpiezaMensualAutomatica() {
 let lockTimer;
 window.unlockRegistry = function() {
     const password = prompt("Ingrese contraseña de administrador:");
-    if (password === "adminhm") {
+    if (password === "caracolito") {
         document.getElementById('lockOverlay').style.display = 'none';
-        lanzarToast("🔓 Sistema desbloqueado por 15 min");
+        lanzarToast("🔓 Sistema desbloqueado por 20 min");
         if (lockTimer) clearTimeout(lockTimer);
         lockTimer = setTimeout(() => {
             document.getElementById('lockOverlay').style.display = 'flex';
             lanzarToast("🔒 Sistema bloqueado");
-        }, 900000); 
-    } else { alert("Contraseña incorrecta"); }
+        }, 1200000); 
+    } else { 
+        alert("Contraseña incorrecta"); 
+    }
 }
 
 // --- BORRAR REGISTRO MANUAL ---
 window.borrarRegistro = async function(id) {
     const password = prompt("Contraseña para BORRAR:");
-    if (password !== "adminhm") return alert("Error.");
+    if (password !== "caracolito") return alert("Error.");
 
     if (confirm("¿Eliminar este registro?")) {
         try {
@@ -111,8 +97,10 @@ window.borrarRegistro = async function(id) {
 window.currentColor = null; 
 window.paintedDays = JSON.parse(localStorage.getItem('dynamoPaintedDays')) || {}; 
 const notasArea = document.getElementById('notasGenerales');
-if(localStorage.getItem('dynamoNotas')) notasArea.value = localStorage.getItem('dynamoNotas');
-notasArea.addEventListener('input', function() { localStorage.setItem('dynamoNotas', this.value); });
+if(notasArea) {
+    if(localStorage.getItem('dynamoNotas')) notasArea.value = localStorage.getItem('dynamoNotas');
+    notasArea.addEventListener('input', function() { localStorage.setItem('dynamoNotas', this.value); });
+}
 
 function lanzarToast(mensaje) {
     const x = document.getElementById("toast");
@@ -139,23 +127,37 @@ window.paintDay = function(fechaKey) {
 
 // --- CÁLCULOS ---
 function calcularGanancia(r) {
+    let rol = r.rol || 'jalador';
     let j = parseInt(r.jarras) || 0;
     let b = parseInt(r.botellas) || 0;
     let c = parseInt(r.cervezas) || 0;
     let p = parseInt(r.palacete) || 0;
     let b100 = parseInt(r.botellas100) || 0;
+    let cig = parseInt(r.cigarros) || 0;
 
-    let total = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete) + (b100 * PRECIOS.botellas100);
+    let total = 0;
+    let meta = false;
 
-    let parts = r.fecha.split('-'); 
-    let fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
-    let esSabado = fechaObj.getDay() === 6;
-    let metaObjetivo = esSabado ? 15 : 10;
-    let puntosMeta = j + b + Math.floor(c / 6);
-    let cumplioMeta = puntosMeta >= metaObjetivo;
+    if (rol === 'barra') {
+        // Lógica de pago Barra: Pago fijo 70
+        total = 70;
+    } else if (rol === 'mozo') {
+        // Lógica de pago Mozo
+        total = 50 + (j * 1) + (b * 2);
+        if (cig > 5) total += 5; 
+    } else {
+        // Lógica de pago Jalador
+        total = (j * PRECIOS.jarra) + (b * PRECIOS.botella) + (c * PRECIOS.cerveza) + (p * PRECIOS.palacete) + (b100 * PRECIOS.botellas100);
+        let parts = r.fecha.split('-'); 
+        let fechaObj = new Date(parts[0], parts[1]-1, parts[2]);
+        let esSabado = fechaObj.getDay() === 6;
+        let metaObjetivo = esSabado ? 15 : 10;
+        let puntosMeta = j + b + Math.floor(c / 6);
+        meta = puntosMeta >= metaObjetivo;
+        if (meta) total += PRECIOS.bonoMeta; 
+    }
 
-    if (cumplioMeta) total += PRECIOS.bonoMeta; 
-    return { total, meta: cumplioMeta, puntos: puntosMeta, metaObjetivo };
+    return { total, meta, rol, j, b, c, cig };
 }
 
 // --- FIREBASE OPS ---
@@ -167,11 +169,13 @@ async function guardarRegistro() {
         fecha: fechaInput.value, 
         nombre: nombre.toLowerCase(), 
         nombreDisplay: nombre.toUpperCase(),
+        rol: document.getElementById('rolInput').value,
         jarras: parseInt(document.getElementById('jarras').value) || 0,
         botellas: parseInt(document.getElementById('botellas').value) || 0,
         cervezas: parseInt(document.getElementById('cervezas').value) || 0,
         palacete: parseInt(document.getElementById('palacete').value) || 0,
         botellas100: parseInt(document.getElementById('botellas100').value) || 0, 
+        cigarros: parseInt(document.getElementById('cigarros').value) || 0,
         timestamp: new Date()
     };
 
@@ -179,7 +183,8 @@ async function guardarRegistro() {
     try {
         await addDoc(collection(db, "registros"), data);
         lanzarToast("✅ ¡Guardado!");
-        ["jarras", "botellas", "cervezas", "palacete", "botellas100", "nombreInput"].forEach(id => document.getElementById(id).value = '');
+        ["jarras", "botellas", "cervezas", "palacete", "botellas100", "cigarros", "nombreInput"].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('rolInput').value = 'jalador';
         document.getElementById('nombreInput').focus();
         await cargarDatos();
     } catch (e) { lanzarToast("❌ Error"); } 
@@ -219,11 +224,17 @@ function renderCalendar() {
         const fechaKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
         cell.innerHTML = `<span class="day-num">${i}</span>`;
         const registrosDia = allRecords.filter(r => r.fecha === fechaKey);
+        
         registrosDia.forEach(reg => {
             const calc = calcularGanancia(reg);
             const div = document.createElement('div');
             div.className = 'worker-dot';
-            div.innerHTML = `${reg.nombreDisplay}${calc.meta ? '⭐' : ''}: <span>${calc.total}</span>`;
+            
+            let labelRol = '';
+            if(calc.rol === 'mozo') labelRol = ' <span style="color:var(--warning); font-size:0.7rem;">(M)</span>';
+            if(calc.rol === 'barra') labelRol = ' <span style="color:var(--secondary); font-size:0.7rem;">(B)</span>';
+
+            div.innerHTML = `${reg.nombreDisplay}${labelRol}${calc.meta ? '⭐' : ''}: <span>${calc.total}</span>`;
             cell.appendChild(div);
         });
         cell.onclick = () => verDetalleDia(fechaKey, registrosDia);
@@ -264,12 +275,19 @@ function verDetalleDia(fecha, registros) {
     panel.style.display = 'block';
     document.getElementById('detalleFechaTitulo').textContent = `Detalles: ${fecha}`;
     lista.innerHTML = registros.length ? '' : '<div style="padding:10px; color:#666;">Sin registros.</div>';
+    
     registros.forEach(r => {
         const calc = calcularGanancia(r);
         const row = document.createElement('div');
         row.className = 'detalle-row';
+        
+        let infoExtras = '';
+        if(calc.rol === 'barra') infoExtras = `<span style="color:var(--secondary)">(Barra - Fijo)</span>`;
+        else if(calc.rol === 'mozo') infoExtras = `${calc.j}J - ${calc.b}B - ${calc.cig}Cig <span style="color:var(--warning)">(Mozo)</span>`;
+        else infoExtras = `${calc.j}J - ${calc.b}B - ${calc.c}C`;
+
         row.innerHTML = `
-            <div><strong>${r.nombreDisplay}</strong><br><small>${r.jarras}J - ${r.botellas}B - ${r.cervezas}C</small></div>
+            <div><strong>${r.nombreDisplay}</strong><br><small>${infoExtras}</small></div>
             <div style="text-align:right; display:flex; align-items:center; gap:10px;">
                 <div style="color:var(--success); font-weight:bold;">S/ ${calc.total}</div>
                 <button class="btn-borrar" onclick="borrarRegistro('${r.id}')">Eliminar</button>
@@ -279,7 +297,6 @@ function verDetalleDia(fecha, registros) {
     panel.scrollIntoView({ behavior: 'smooth' });
 }
 
-// --- LÓGICA DE REPORTES SEMANALES MEJORADA ---
 function getSunday(d) {
     d = new Date(d);
     d.setDate(d.getDate() - d.getDay());
@@ -291,6 +308,7 @@ function renderWeeklyReport() {
     container.innerHTML = '';
     const weeklyGroups = {};
     const hoy = new Date();
+    
     const domingoActual = getSunday(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()));
     const domingoActualKey = domingoActual.toISOString().split('T')[0];
 
@@ -298,23 +316,42 @@ function renderWeeklyReport() {
         const parts = r.fecha.split('-');
         const sunday = getSunday(new Date(parts[0], parts[1]-1, parts[2]));
         const key = sunday.toISOString().split('T')[0];
+        
         if(!weeklyGroups[key]) weeklyGroups[key] = {};
         const calc = calcularGanancia(r);
         weeklyGroups[key][r.nombreDisplay] = (weeklyGroups[key][r.nombreDisplay] || 0) + calc.total;
     });
 
     Object.keys(weeklyGroups).sort().reverse().forEach(key => {
-        const sunday = new Date(key + "T00:00:00");
+        const parts = key.split('-');
+        const sunday = new Date(parts[0], parts[1]-1, parts[2]);
         const options = { day: 'numeric', month: 'short' };
         
-        // Identificar si es semana actual o pasada
         const isCurrent = (key === domingoActualKey);
-        const statusClass = isCurrent ? 'current-week' : 'past-week';
+        let statusClass = '';
+        let badgeText = '';
+
+        if (isCurrent) {
+            statusClass = 'current-week';
+            badgeText = '⚡ EN CURSO';
+        } else {
+            let fechaLimitePago = new Date(sunday);
+            fechaLimitePago.setDate(fechaLimitePago.getDate() + 10);
+            fechaLimitePago.setHours(11, 0, 0, 0); 
+
+            if (hoy < fechaLimitePago) {
+                statusClass = 'pending-week';
+                badgeText = '⏳ PENDIENTE';
+            } else {
+                statusClass = 'past-week';
+                badgeText = '✅ PAGADO';
+            }
+        }
 
         let html = `<div class="payment-group ${statusClass}">
             <div class="payment-header">
                 <span>SEMANA: ${sunday.toLocaleDateString('es-ES', options)}</span>
-                <span class="payment-date">${isCurrent ? '⚡ ACTUAL' : '📅 PASADA'}</span>
+                <span class="payment-date">${badgeText}</span>
             </div>`;
         
         for (const [nom, tot] of Object.entries(weeklyGroups[key])) {

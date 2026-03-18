@@ -16,17 +16,90 @@
             --warning: #ffea00;
             --danger: #ff1744;
         }
+/* --- ESTILO DE LAS LUCES DE FONDO --- */
+.light {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    z-index: -2; /* Más al fondo que el ruido (.bg) */
+    filter: blur(80px); /* Esto hace que se vea como luz difusa */
+    pointer-events: none;
+    opacity: 0.3; /* Controla qué tan fuerte brilla (0.3 es suave) */
+}
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            -webkit-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+.light-1 {
+    background: var(--primary); /* Color Fucsia */
+    top: 10%;
+    left: 5%;
+    animation: move-light 15s infinite alternate ease-in-out;
+}
+
+.light-2 {
+    background: var(--warning); /* Color Celeste */
+    bottom: 20%;
+    right: 5%;
+    animation: move-light 20s infinite alternate-reverse ease-in-out;
+}
+
+.light-3 {
+    background: var(--danger); /* Color Verde */
+    top: 50%;
+    left: 40%;
+    animation: move-light 25s infinite alternate ease-in-out;
+}
+
+/* Animación para que las luces se muevan suavemente */
+@keyframes move-light {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(50px, 100px) scale(1.2); }
+    100% { transform: translate(-50px, 50px) scale(0.8); }
+}
+
+
+        /* Modifica o añade esto a tu CSS existente */
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #0a0a0a; /* Mantengo tu color oscuro */
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    overflow-x: hidden; /* Importante para que el movimiento del fondo no cree barras de scroll */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.bg {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    width: 200%;
+    height: 200vh;
+    background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
+    background-repeat: repeat;
+    animation: bg-animation .2s infinite;
+    opacity: .4; /* Te recomiendo .4 para que sea sutil y no canse la vista */
+    visibility: visible;
+    z-index: -1; /* Esto lo envía al fondo de todo */
+    pointer-events: none; /* Esto permite que puedas hacer clic en los botones a través del efecto */
+}
+
+@keyframes bg-animation {
+    0% { transform: translate(0,0) }
+    10% { transform: translate(-5%,-5%) }
+    20% { transform: translate(-10%,5%) }
+    30% { transform: translate(5%,-10%) }
+    40% { transform: translate(-5%,15%) }
+    50% { transform: translate(-10%,5%) }
+    60% { transform: translate(15%,0) }
+    70% { transform: translate(0,10%) }
+    80% { transform: translate(-15%,0) }
+    90% { transform: translate(10%,5%) }
+    100% { transform: translate(5%,0) }
+}
 
         .container { max-width: 900px; margin: 0 auto; }
         h1, h2, h3 { 
@@ -75,11 +148,11 @@
         }
 
         label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.85rem; }
-        input {
+        input, select {
             width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #444;
             color: white; border-radius: 6px; font-size: 1rem; box-sizing: border-box;
         }
-        input:focus { outline: none; border-color: var(--primary); }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
         .uppercase-input { text-transform: uppercase; }
 
         button.btn-save {
@@ -115,14 +188,8 @@
         }
         .btn-borrar:hover { background: #d50000; }
 
-        /* --- ESTILOS DE PAGOS MEJORADOS --- */
         .payment-group { margin-bottom: 20px; border: 1px solid #444; border-radius: 8px; overflow: hidden; transition: 0.3s; }
         
-        /* Semana Pasada */
-        .payment-group.past-week { opacity: 0.6; border-color: var(--danger); filter: grayscale(0.5); }
-        .payment-group.past-week .payment-header { background: #2a1010; color: var(--danger); }
-        
-        /* Semana Actual (Brillante) */
         .payment-group.current-week { 
             border-color: var(--secondary); 
             box-shadow: 0 0 15px rgba(0, 188, 212, 0.4); 
@@ -133,6 +200,15 @@
             to { box-shadow: 0 0 20px rgba(0, 188, 212, 0.6); }
         }
 
+        .payment-group.pending-week { 
+            border-color: var(--warning); 
+            box-shadow: 0 0 10px rgba(255, 234, 0, 0.2); 
+        }
+        .payment-group.pending-week .payment-header { background: #332d00; color: var(--warning); }
+
+        .payment-group.past-week { opacity: 0.6; border-color: var(--danger); filter: grayscale(0.5); }
+        .payment-group.past-week .payment-header { background: #2a1010; color: var(--danger); }
+        
         .payment-header { background: #333; padding: 10px 15px; font-weight: bold; color: var(--secondary); display: flex; justify-content: space-between; }
         .payment-date { color: #aaa; font-size: 0.9rem; font-weight: normal; }
         .payment-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid #2a2a2a; background: #1e1e1e; }
@@ -167,7 +243,10 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
-
+<div class="bg"></div> 
+    <div class="light light-1"></div>
+    <div class="light light-2"></div>
+    <div class="light light-3"></div>
 <div class="container">
     <h1>DYNAMO</h1>
 
@@ -193,7 +272,7 @@
     <div class="card">
         <h2>Pagos Semanales</h2>
         <p style="color:#888; text-align: center; font-size:0.9rem;">
-            Ciclo: Domingo a Sábado | Pago: Martes
+            Ciclo: Domingo a Sábado | Pago: Miércoles 11:00 AM
         </p>
         <div id="listaPagos"></div>
     </div>
@@ -211,28 +290,40 @@
                 <input type="date" id="fechaInput">
             </div>
             <div>
-                <label>Jalador (Nombre)</label>
+                <label>Nombre del Trabajador</label>
                 <input type="text" id="nombreInput" class="uppercase-input" placeholder="HEBEM" oninput="this.value = this.value.toUpperCase()">
             </div>
             <div>
-                <label>Jarras (S/3.00)</label> 
-                <input type="number" id="jarras">
+                <label>Rol</label>
+                <select id="rolInput">
+                    <option value="jalador">Jalador</option>
+                    <option value="mozo">Mozo (S/50)</option>
+                    <option value="barra">Barra (S/70 Fijo)</option>
+                </select>
             </div>
             <div>
-                <label>Botellas (S/4.00)</label>
-                <input type="number" id="botellas">
+                <label>Jarras</label> 
+                <input type="number" id="jarras" placeholder="Cant.">
             </div>
             <div>
-                <label>Cervezas (S/1.00)</label>
-                <input type="number" id="cervezas">
+                <label>Botellas</label>
+                <input type="number" id="botellas" placeholder="Cant.">
             </div>
             <div>
-                <label>Palacete (S/8.00)</label>
-                <input type="number" id="palacete">
+                <label>Cervezas (Solo Jalador)</label>
+                <input type="number" id="cervezas" placeholder="Cant.">
             </div>
             <div>
-                <label>Botellas +100 (S/5.00)</label>
-                <input type="number" id="botellas100">
+                <label>Palacete (Solo Jalador)</label>
+                <input type="number" id="palacete" placeholder="Cant.">
+            </div>
+            <div>
+                <label>Botellas +100 (Solo Jalador)</label>
+                <input type="number" id="botellas100" placeholder="Cant.">
+            </div>
+            <div>
+                <label>Cajas de Cigarros (Solo Mozo)</label>
+                <input type="number" id="cigarros" placeholder="Cant.">
             </div>
         </div>
         <button class="btn-save" id="btnGuardar">Guardar Producción</button>
