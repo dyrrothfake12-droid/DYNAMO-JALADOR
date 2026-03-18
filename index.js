@@ -33,31 +33,47 @@ fechaInput.valueAsDate = new Date();
 
 // --- INICIO DE APP ---
 async function iniciarApp() {
-    await limpiezaQuincenalAutomatica(); // Borra datos viejos al entrar
+    await limpiezaMensualAutomatica(); // Ahora limpia cada mes y medio
     await cargarDatos();
 }
 iniciarApp();
 
-// --- FUNCIÓN DE LIMPIEZA QUINCENAL (AUTOMÁTICA) ---
-async function limpiezaQuincenalAutomatica() {
+// --- FUNCIÓN DE LIMPIEZA AUTOMÁTICA (CADA MES Y MEDIO) ---
+async function limpiezaMensualAutomatica() {
     const ultimaLimpieza = localStorage.getItem('ultimaLimpiezaDynamo');
     const hoy = new Date();
     
-    // Si no hay fecha o pasaron más de 15 días
-    if (!ultimaLimpieza || (hoy - new Date(ultimaLimpieza)) > (15 * 24 * 60 * 60 * 1000)) {
-        console.log("Iniciando limpieza de datos antiguos...");
-        const hace15Dias = new Date();
-        hace15Dias.setDate(hace15Dias.getDate() - 15);
-        const fechaLimiteStr = hace15Dias.toISOString().split('T')[0];
+    // 45 días en milisegundos (1.5 meses aprox)
+    // 45 días * 24 horas * 60 min * 60 seg * 1000 ms
+    const limiteMs = 45 * 24 * 60 * 60 * 1000;
 
+    // Si no hay registro de limpieza o pasaron más de 45 días desde la última ejecución
+    if (!ultimaLimpieza || (hoy - new Date(ultimaLimpieza)) > limiteMs) {
+        console.log("Iniciando limpieza de datos antiguos (más de 45 días)...");
+        
+        const hace45Dias = new Date();
+        hace45Dias.setDate(hace45Dias.getDate() - 45);
+        
+        // Formato YYYY-MM-DD para comparar en Firestore
+        const fechaLimiteStr = hace45Dias.toISOString().split('T')[0];
+
+        // Consulta registros donde la fecha sea menor a la de hace 45 días
         const q = query(collection(db, "registros"), where("fecha", "<", fechaLimiteStr));
-        const snapshot = await getDocs(q);
         
-        const promesasBorrado = snapshot.docs.map(d => deleteDoc(doc(db, "registros", d.id)));
-        await Promise.all(promesasBorrado);
-        
-        localStorage.setItem('ultimaLimpiezaDynamo', hoy.toISOString());
-        console.log("Limpieza completada.");
+        try {
+            const snapshot = await getDocs(q);
+            const promesasBorrado = snapshot.docs.map(d => deleteDoc(doc(db, "registros", d.id)));
+            
+            await Promise.all(promesasBorrado);
+            
+            // Guardamos la fecha de hoy como la última vez que se ejecutó la limpieza
+            localStorage.setItem('ultimaLimpiezaDynamo', hoy.toISOString());
+            console.log(`Limpieza completada. Se eliminaron registros anteriores al: ${fechaLimiteStr}`);
+        } catch (error) {
+            console.error("Error en el proceso de limpieza:", error);
+        }
+    } else {
+        console.log("No hace falta limpieza aún. Próxima revisión en unos días.");
     }
 }
 
